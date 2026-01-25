@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Market Hustle</title>
+<style>
+  body {
+    margin:0;
+    height:100vh;
+    background:#000;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  #ui {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    color: #fff;
+    font-size: 42px;
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 0 0 10px #000, 0 0 16px #000;
+    z-index: 10;
+    line-height: 1.35;
+  }
+  #inventory-ui {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    color: #fff;
+    font-size: 42px;
+    text-shadow: 0 0 10px #000;
+    pointer-events: none;
+    user-select: none;
+    z-index: 10;
+  }
+  #interact-ui {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.92);
+    border: 5px solid #666;
+    border-radius: 20px 20px 0 0;
+    padding: 28px 48px;
+    color: #eee;
+    font-size: 52px;
+    text-align: center;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    line-height: 1.4;
+    min-width: 420px;
+    transition: transform 0.4s ease-out;
+    transform: translateX(-50%) translateY(100%);
+  }
+  #interact-ui.visible {
+    display: block;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+  .action-btn {
+    margin: 16px 12px 0;
+    background: #4caf50;
+    border: none;
+    color: white;
+    padding: 18px 48px;
+    border-radius: 12px;
+    font-size: 48px;
+    cursor: pointer;
+    pointer-events: all;
+  }
+  .action-btn.sell {
+    background: #e67e22;
+  }
+  .action-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+  }
+  #night-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0);
+    pointer-events: none;
+    display: none;
+    z-index: 20;
+    color: #fff;
+    font-size: 72px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-shadow: 0 0 20px #000;
+  }
+  canvas {
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  #menu-btn:hover, #menu-btn:active {
+    transform: scale(1.1);
+  }
+  #achievements-ui h3 {
+    margin: 0 0 12px 0; font-size: 42px; color: #f1c40f;
+  }
+  .achievement {
+    margin: 20px 0; padding: 20px; 
+    background: rgba(255,255,255,0.1);
+    border-radius: 16px; border-left: 6px solid #4caf50;
+  }
+  .achievement.unlocked { border-left-color: #f1c40f; background: rgba(241,196,15,0.2); }
+  .achievement .title { font-size: 44px; margin-bottom: 8px; }
+  .achievement .desc { opacity: 0.9; font-size: 32px; }
+</style>
+</head>
+<body>
+
+<div id="ui">
+  <div>Money: $<span id="money">10</span> | Day: <span id="day">1</span> | Time left: <span id="time-left">120</span>s</div>
+</div>
+
+<div id="inventory-ui">
+  <div id="inventory-count">Inventory: 0/5</div>
+</div>
+
+<div id="interact-ui">
+  <div id="stall-info"></div>
+  <div id="price-info"></div>
+  <button id="buy-btn"  class="action-btn" onclick="tryBuy()">Buy</button>
+  <button id="sell-btn" class="action-btn sell" onclick="trySell()">Sell</button>
+</div>
+
+<div id="menu-btn" style="
+  position: absolute; top: 16px; right: 120px; 
+  width: 80px; height: 80px; background: #e74c3c; 
+  border-radius: 50%; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; color: white; text-shadow: none;
+  pointer-events: all; z-index: 15;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: transform 0.2s;
+">
+  ≡
+</div>
+
+<div id="achievements-ui" style="
+  position: absolute; top: 0; right: 0;
+  width: 420px; height: 100vh;
+  background: rgba(0,0,0,0.95); color: #fff;
+  font-size: 36px; padding: 32px;
+  display: none; overflow-y: auto;
+  z-index: 25;
+">
+  <div style="font-size: 52px; margin-bottom: 24px; text-align: center;">
+    🏆 ACHIEVEMENTS
+  </div>
+  <div id="achievements-list"></div>
+  <div style="margin-top: 48px; font-size: 28px; opacity: 0.8;">
+    <div>Tycoon Level: <span id="menu-tycoon-level">1</span></div>
+    <div>High Score: $<span id="menu-high-score">0</span></div>
+    <div>Total Achievements: <span id="achv-count">0</span>/25</div>
+  </div>
+    <button id="reset-game-btn" style="
+      margin-top: 40px;
+      width: 100%;
+      padding: 20px;
+      font-size: 36px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;">
+      Reset Game (for testing)
+    </button>
+</div>
+
+<div id="night-overlay">
+  <div>Market Closed</div>
+  <div>Come back tomorrow...</div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+// ────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const moneyEl   = document.getElementById('money');
+const dayEl     = document.getElementById('day');
+const timeLeftEl= document.getElementById('time-left');
+const invCount  = document.getElementById('inventory-count');
+const interactUI= document.getElementById('interact-ui');
+const stallInfo = document.getElementById('stall-info');
+const priceInfo = document.getElementById('price-info');
+const buyBtn    = document.getElementById('buy-btn');
+const sellBtn   = document.getElementById('sell-btn');
+const nightOverlay = document.getElementById('night-overlay');
+
+let W, H;
+
+// ─── Config ─────────────────────────────────────
+const TILE = 96;
+const VIEW_TILES_W = 9;
+const VIEW_TILES_H = 6;
+const WORLD_W = 100;
+const WORLD_H = 80;
+let MAX_INV = 5;  // changed to let so we can increase it
+const START_MONEY = 10;
+const DAY_LENGTH_SECONDS = 120;
+const NIGHT_FADE_TIME = 1000;
+const NIGHT_HOLD_TIME = 4000;
+const PLAYER_SPEED = 0.05;
+const NPC_SPEED = 0.025;
+const INTERACT_RANGE = 3.0;
+const NPC_COUNT = 380;
+const THIEF_COUNT = 20;
+const FLOAT_TEXT_LIFETIME = 1800;
+const EXTRA_TILES_NORMAL = 10;
+const EXTRA_TILES_MOVING = 10;
+const THIEF_STEAL_RANGE = 2;
+
+// ─── Helpers ────────────────────────────────────
+function isOccupied(tx, ty) {
+  if (tx < 0 || tx >= WORLD_W || ty < 0 || ty >= WORLD_H) return true;
+  return world[ty][tx] === 1;
+}
+
+function manhattan(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function findPath(start, goal) {
+  const open = [];
+  const cameFrom = new Map();
+  const gScore = new Map();
+  const fScore = new Map();
+
+  const startKey = `${Math.floor(start.x)},${Math.floor(start.y)}`;
+  const goalKey = `${Math.floor(goal.x)},${Math.floor(goal.y)}`;
+
+  gScore.set(startKey, 0);
+  fScore.set(startKey, manhattan(start, goal));
+  open.push({key: startKey, x: Math.floor(start.x), y: Math.floor(start.y), f: fScore.get(startKey)});
+
+  const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+
+  while (open.length > 0) {
+    open.sort((a,b) => a.f - b.f);
+    const current = open.shift();
+    const cKey = current.key;
+
+    if (cKey === goalKey) {
+      const path = [];
+      let curr = current;
+      while (curr) {
+        path.unshift({x: curr.x + 0.5, y: curr.y + 0.5});
+        const prevKey = cameFrom.get(`${curr.x},${curr.y}`);
+        if (!prevKey) break;
+        const [px, py] = prevKey.split(',').map(Number);
+        curr = {x: px, y: py};
+      }
+      return path;
+    }
+
+    const [cx, cy] = cKey.split(',').map(Number);
+
+    for (const [dx, dy] of dirs) {
+      const nx = cx + dx;
+      const ny = cy + dy;
+      const nKey = `${nx},${ny}`;
+
+      if (isOccupied(nx, ny)) continue;
+
+      const tentG = gScore.get(cKey) + 1;
+      if (!gScore.has(nKey) || tentG < gScore.get(nKey)) {
+        cameFrom.set(nKey, cKey);
+        gScore.set(nKey, tentG);
+        fScore.set(nKey, tentG + manhattan({x:nx,y:ny}, goal));
+        if (!open.some(o => o.key === nKey)) {
+          open.push({key: nKey, x: nx, y: ny, f: fScore.get(nKey)});
+        }
+      }
+    }
+  }
+  return [];
+}
+
+function addFloatText(x, y, text, color) {
+  floatTexts.push({
+    x, y: y - 0.3,
+    text,
+    color,
+    alpha: 1,
+    vy: -0.06,
+    life: FLOAT_TEXT_LIFETIME
+  });
+}
+
+// ─── Items ──────────────────────────────────────
+const ITEMS = {
+  apple:  { emoji:'🍎', baseBuy:2,  baseSell:3,  spoil:7,  color:'#e74c3c' },
+  banana: { emoji:'🍌', baseBuy:1,  baseSell:2,  spoil:5,  color:'#f1c40f' },
+  fish:   { emoji:'🐟', baseBuy:5,  baseSell:8,  spoil:2,  color:'#3498db' },
+  bread:  { emoji:'🍞', baseBuy:3,  baseSell:5,  spoil:3,  color:'#d35400' },
+  milk:   { emoji:'🥛', baseBuy:4,  baseSell:6,  spoil:4,  color:'#ecf0f1' }
+};
+
+const NPC_COLORS = ['#3498db','#e74c3c','#2ecc71','#f1c40f','#9b59b6','#e67e22','#1abc9c','#34495e','#7f8c8d'];
+
+// ─── Game state ─────────────────────────────────
+let world = Array(WORLD_H).fill().map(()=>Array(WORLD_W).fill(0));
+let player = {
+  x: WORLD_W/2 + 0.5,
+  y: WORLD_H/2 + 0.5,
+  path: [],
+  money: START_MONEY,
+  inventory: []
+};
+
+let stalls = [];
+let decor = [];
+let npcs = [];
+let thieves = [];
+let floatTexts = [];
+
+let currentDay = 1;
+let secondsLeft = DAY_LENGTH_SECONDS;
+let totalEarnings = START_MONEY;
+let dayStartMoney = START_MONEY;
+
+let camX = player.x;
+let camY = player.y;
+let camTargetX = player.x;
+let camTargetY = player.y;
+
+let dragging = false;
+let lastTX = 0, lastTY = 0;
+
+let isNight = false;
+let fadeAlpha = 0;
+let fadeStart = 0;
+let fadeDirection = 1;
+
+let lastSecond = performance.now();
+
+// ─── NEW: Persistence & Progression ───────────────────────────────
+const ACHIEVEMENTS = [
+  {id: 'first_profit', name: 'First Win', desc: 'Make $10 profit in one day', check: () => player.money - dayStartMoney >= 10, reward: '+1 Max Inventory' },
+  {id: 'hundred', name: 'Hundredaire', desc: 'Reach $100 total earnings', check: () => totalEarnings >= 100, reward: '🏆' },
+  {id: 'thousand', name: 'Thousandaire', desc: 'Reach $1,000 total earnings', check: () => totalEarnings >= 1000, reward: '+5% Profit Bonus' },
+  {id: 'full_inv', name: 'Pack Mule', desc: 'Fill inventory to max', check: () => player.inventory.length >= MAX_INV, reward: '🐒' },
+  {id: 'speed_run', name: 'Speed Demon', desc: 'Earn $20 in under 60s', check: () => { 
+    return (DAY_LENGTH_SECONDS - secondsLeft <= 60) && (player.money - dayStartMoney >= 20); 
+  }, reward: '⚡' },
+  {id: 'no_thief', name: 'Ghost', desc: 'Complete day without getting stolen', check: () => true, reward: '👻' },
+  {id: 'apple_master', name: 'Apple Baron', desc: 'Sell 10 apples', check: () => achievements.counters.sold.apple >= 10, reward: '🍎' },
+  {id: 'fish_master', name: 'Fish Lord', desc: 'Sell 10 fish', check: () => achievements.counters.sold.fish >= 10, reward: '🐟' },
+  {id: 'day10', name: 'Veteran', desc: 'Survive 10 days', check: () => currentDay >= 11, reward: '💪' },
+  {id: 'day50', name: 'Legend', desc: 'Survive 50 days', check: () => currentDay >= 51, reward: '⭐' },
+];
+
+let highScore = 0;
+let tycoonLevel = 1;
+let achievements = {
+  unlocked: [],
+  counters: { sold: {apple:0, banana:0, fish:0, bread:0, milk:0}, stolen: 0 },
+  bonuses: { profitMultiplier: 1.0, maxInvBonus: 0 }
+};
+
+// ─── Persistence ──────────────────────────────────────────────────
+function loadGame() {
+  const saved = localStorage.getItem('marketHustle');
+  if (saved) {
+    const data = JSON.parse(saved);
+    
+    highScore      = data.highScore      || 0;
+    tycoonLevel    = data.tycoonLevel    || 1;
+    achievements   = data.achievements   || achievements;
+    currentDay     = data.currentDay     || 1;           // ← new
+    player.money   = data.money          || START_MONEY; // ← new
+    
+    // Apply bonuses from achievements
+    MAX_INV += achievements.bonuses.maxInvBonus || 0;
+    
+    // Important: also update totalEarnings to match loaded money + previous logic
+    // (prevents weird inconsistencies after reload)
+    totalEarnings = Math.max(totalEarnings, player.money);
+  }
+}
+
+function saveGame() {
+  localStorage.setItem('marketHustle', JSON.stringify({
+    highScore,
+    tycoonLevel,
+    achievements,
+    currentDay,                // ← new
+    money: player.money,       // ← new (player's current cash)
+    lastPlayed: Date.now()
+  }));
+}
+
+function checkAchievements() {
+  for (const achv of ACHIEVEMENTS) {
+    if (!achievements.unlocked.includes(achv.id) && achv.check()) {
+      achievements.unlocked.push(achv.id);
+      addFloatText(player.x, player.y, '🏆 ACHIEVEMENT!', '#f1c40f');
+      console.log(`[ACHIEVEMENT UNLOCKED] ${achv.name} (${achv.id}) — Reward: ${achv.reward}`);
+      console.table(achievements.unlocked);  // shows full list
+      
+      if (achv.id === 'first_profit') {
+        achievements.bonuses.maxInvBonus += 1;
+        MAX_INV += 1;
+      }
+      if (achv.id === 'thousand') {
+        achievements.bonuses.profitMultiplier *= 1.05;
+      }
+      
+      saveGame();
+      break;
+    }
+  }
+}
+
+// ─── UI ─────────────────────────────────────────
+function updateUI() {
+  moneyEl.textContent   = player.money;
+  dayEl.textContent     = currentDay;
+  timeLeftEl.textContent = secondsLeft;
+  invCount.textContent  = `Inventory: ${player.inventory.length}/${MAX_INV}`;
+  
+  const hsEl = document.getElementById('high-score');
+  const mhsEl = document.getElementById('menu-high-score');
+  const tlEl = document.getElementById('menu-tycoon-level');
+  const acEl = document.getElementById('achv-count');
+  
+  if (hsEl) hsEl.textContent = highScore;
+  if (mhsEl) mhsEl.textContent = highScore;
+  if (tlEl) tlEl.textContent = tycoonLevel;
+  if (acEl) acEl.textContent = achievements.unlocked.length + '/' + ACHIEVEMENTS.length;
+}
+
+function resetDay() {
+  secondsLeft = DAY_LENGTH_SECONDS;
+  updateUI();
+}
+
+// ─── World generation ───────────────────────────
+function generateWorld() {
+  player.x = WORLD_W/2 + 0.5;
+  player.y = WORLD_H/2 + 0.5;
+  player.path = [];
+  camX = player.x;
+  camY = player.y;
+  camTargetX = player.x;
+  camTargetY = player.y;
+
+  world = Array(WORLD_H).fill().map(()=>Array(WORLD_W).fill(0));
+  stalls = [];
+  decor = [];
+  npcs = [];
+  thieves = [];
+
+  const types = Object.keys(ITEMS);
+
+  for (let i = 0; i < 220; i++) {
+    let x,y, attempts = 0;
+    do {
+      x = 3 + Math.floor(Math.random()*(WORLD_W-6));
+      y = 3 + Math.floor(Math.random()*(WORLD_H-6));
+      attempts++;
+    } while ((world[y][x] || world[y][x+1] || world[y+1][x]) && attempts < 60);
+
+    if (attempts >= 60) continue;
+
+    world[y][x] = 1;
+    const item = types[Math.floor(Math.random()*types.length)];
+    const stock = 3 + Math.floor(Math.random() * 18);
+    stalls.push({
+      x, y, type: item,
+      buyOffset: Math.floor(Math.random() * 5) - 2,
+      sellOffset: Math.floor(Math.random() * 5) - 2,
+      stock, maxStock: stock
+    });
+  }
+
+  stalls.sort((a,b) => a.y - b.y);
+
+  const decorColors = ['#c0392b','#e67e22','#f39c12','#f1c40f','#27ae60','#2980b9','#8e44ad','#7f8c8d','#34495e','#d35400'];
+  for (let i = 0; i < 850; i++) {
+    let x = 2 + Math.floor(Math.random()*(WORLD_W-4));
+    let y = 2 + Math.floor(Math.random()*(WORLD_H-4));
+    if (world[y][x]) continue;
+    world[y][x] = 1;
+    decor.push({
+      x, y,
+      color: decorColors[Math.floor(Math.random()*decorColors.length)]
+    });
+  }
+
+  for (let i = 0; i < NPC_COUNT; i++) {
+    let x,y;
+    do {
+      x = Math.random() * WORLD_W;
+      y = Math.random() * WORLD_H;
+    } while (isOccupied(Math.floor(x), Math.floor(y)));
+    npcs.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8,
+      targetTimer: Math.random() * 12000 + 4000,
+      stopped: false,
+      stopTimer: 0,
+      color: NPC_COLORS[Math.floor(Math.random()*NPC_COLORS.length)]
+    });
+  }
+
+  for (let i = 0; i < THIEF_COUNT; i++) {
+    let x,y;
+    do {
+      x = Math.random() * WORLD_W;
+      y = Math.random() * WORLD_H;
+    } while (isOccupied(Math.floor(x), Math.floor(y)));
+    thieves.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8,
+      targetTimer: Math.random() * 12000 + 4000,
+      stopped: false,
+      stopTimer: 0,
+      pulse: 0
+    });
+  }
+
+  dayStartMoney = player.money;
+  resetDay();
+}
+
+// ─── Price logic ─────────────────────────────────
+function getStallBuyPrice(stall) {
+  const data = ITEMS[stall.type];
+  let base = data.baseBuy + stall.buyOffset;
+  const ageMod = Math.max(0.4, 1 - (currentDay-1)/data.spoil * 0.7);
+  return Math.max(1, Math.floor(base * ageMod));
+}
+
+function getStallSellPrice(stall) {
+  const data = ITEMS[stall.type];
+  let base = data.baseSell + stall.sellOffset;
+  const ageMod = Math.max(0.45, 1 - (currentDay-1)/data.spoil * 0.65);
+  const buy = getStallBuyPrice(stall);
+  let sell = Math.floor(base * ageMod * 0.68 * achievements.bonuses.profitMultiplier);
+  sell = Math.max(1, Math.min(sell, buy - 1));
+  return sell;
+}
+
+// ─── Trading ────────────────────────────────────
+function getNearestStall() {
+  let best = null;
+  let minD = 999;
+  for (const s of stalls) {
+    const d = Math.hypot(s.x+0.5 - player.x, s.y+0.5 - player.y);
+    if (d < minD && d <= INTERACT_RANGE) {
+      minD = d;
+      best = s;
+    }
+  }
+  return best;
+}
+
+function tryBuy() {
+  const stall = getNearestStall();
+  if (!stall || stall.stock <= 0) return;
+  const price = getStallBuyPrice(stall);
+  if (player.money < price || player.inventory.length >= MAX_INV) return;
+
+  player.money -= price;
+  totalEarnings -= price;
+  player.inventory.push({type:stall.type, buyDay:currentDay, buyPrice:price});
+  stall.stock--;
+  addFloatText(player.x, player.y, `-${price}`, '#e74c3c');
+  updateUI();
+  checkAchievements();  // Check after buy (e.g. for full_inv)
+}
+
+function trySell() {
+  const stall = getNearestStall();
+  if (!stall) return;
+  let sold = 0;
+
+  for (let i = player.inventory.length - 1; i >= 0; i--) {
+    const it = player.inventory[i];
+    if (it.type !== stall.type) continue;
+
+    const data = ITEMS[it.type];
+    const age = currentDay - it.buyDay;
+    let value = (age < data.spoil) ? getStallSellPrice(stall) : 0;
+
+    player.money += value;
+    totalEarnings += value;
+    sold += value;
+    player.inventory.splice(i, 1);
+
+    addFloatText(player.x, player.y, (value >= 0 ? '+' : '') + value, value >= 0 ? '#2ecc71' : '#e74c3c');
+
+    // Track sales for achievements + log (MUST be inside the loop!)
+    if (achievements.counters.sold[it.type] !== undefined) {
+      achievements.counters.sold[it.type]++;
+      console.log(`Sold ${it.type} — Total sold ${it.type}: ${achievements.counters.sold[it.type]}`);
+    }
+  }
+
+  updateUI();
+  checkAchievements();
+}
+
+// ─── Thief stealing ─────────────────────────────
+function trySteal(now) {
+  thieves.forEach(thief => {
+    const dist = Math.hypot(thief.x - player.x, thief.y - player.y);
+    if (dist <= THIEF_STEAL_RANGE && player.inventory.length > 0) {
+      achievements.counters.stolen++;
+      const stolenCount = player.inventory.length;
+      player.inventory = [];
+      addFloatText(player.x, player.y - 1, `-${stolenCount} stolen!`, '#ff0000');
+      updateUI();
+      thief.vx *= 1.8;
+      thief.vy *= 1.8;
+      thief.targetTimer = 5000;
+    }
+  });
+}
+
+// ─── Find closest walkable tile next to stall ───
+function getClosestAdjacentToStall(stallX, stallY, playerX, playerY) {
+  const candidates = [];
+  const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+
+  for (const [dx, dy] of dirs) {
+    const adjX = stallX + dx;
+    const adjY = stallY + dy;
+    if (!isOccupied(adjX, adjY)) {
+      const distToPlayer = Math.hypot(adjX + 0.5 - playerX, adjY + 0.5 - playerY);
+      candidates.push({x: adjX + 0.5, y: adjY + 0.5, dist: distToPlayer});
+    }
+  }
+
+  if (candidates.length === 0) return null;
+  candidates.sort((a,b) => a.dist - b.dist);
+  return candidates[0];
+}
+
+// ─── Input ──────────────────────────────────────
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (e.touches.length !== 1 || isNight) return;
+  const t = e.touches[0];
+  lastTX = t.clientX; lastTY = t.clientY;
+  dragging = true;
+
+  const r = canvas.getBoundingClientRect();
+  const mx = t.clientX - r.left;
+  const my = t.clientY - r.top;
+  const targetWorldX = camX + (mx - W/2)/TILE;
+  const targetWorldY = camY + (my - H/2)/TILE;
+
+  const tapTileX = Math.floor(targetWorldX);
+  const tapTileY = Math.floor(targetWorldY);
+
+  let goal = {x: tapTileX + 0.5, y: tapTileY + 0.5};
+
+  let tappedStall = null;
+  for (const stall of stalls) {
+    if (stall.x === tapTileX && stall.y === tapTileY) {
+      tappedStall = stall;
+      break;
+    }
+  }
+
+  if (tappedStall) {
+    const adj = getClosestAdjacentToStall(tappedStall.x, tappedStall.y, player.x, player.y);
+    if (adj) goal = adj;
+  }
+
+  player.path = findPath(player, goal);
+});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (!dragging || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  const dx = (t.clientX - lastTX) / TILE * 1.5;
+  const dy = (t.clientY - lastTY) / TILE * 1.5;
+  camTargetX -= dx;
+  camTargetY -= dy;
+  camTargetX = Math.max(VIEW_TILES_W/2, Math.min(WORLD_W - VIEW_TILES_W/2, camTargetX));
+  camTargetY = Math.max(VIEW_TILES_H/2, Math.min(WORLD_H - VIEW_TILES_H/2, camTargetY));
+  lastTX = t.clientX; lastTY = t.clientY;
+});
+
+canvas.addEventListener('touchend', e => { dragging = false; e.preventDefault(); });
+
+let mdown = false;
+canvas.addEventListener('mousedown', e=>{ mdown=true; lastTX=e.clientX; lastTY=e.clientY; });
+canvas.addEventListener('mousemove', e=>{
+  if (!mdown) return;
+  const dx = (e.clientX - lastTX) / TILE * 1.5;
+  const dy = (e.clientY - lastTY) / TILE * 1.5;
+  camTargetX -= dx; camTargetY -= dy;
+  camTargetX = Math.max(VIEW_TILES_W/2, Math.min(WORLD_W - VIEW_TILES_W/2, camTargetX));
+  camTargetY = Math.max(VIEW_TILES_H/2, Math.min(WORLD_H - VIEW_TILES_H/2, camTargetY));
+  lastTX = e.clientX; lastTY = e.clientY;
+});
+canvas.addEventListener('mouseup mouseleave', () => mdown = false);
+
+// ─── Menu/Achievements ────────────────────────────────────────────
+const menuBtn = document.getElementById('menu-btn');
+const achvUI = document.getElementById('achievements-ui');
+const achvList = document.getElementById('achievements-list');
+
+// Already in your code, but make sure it's exactly like this:
+menuBtn.onclick = () => {
+  achvUI.style.display = achvUI.style.display === 'block' ? 'none' : 'block';
+  if (achvUI.style.display === 'block') {
+    updateAchievementsUI();
+  }
+};
+
+function updateAchievementsUI() {
+  achvList.innerHTML = '';
+  ACHIEVEMENTS.forEach(achv => {
+    const div = document.createElement('div');
+    div.className = `achievement ${achievements.unlocked.includes(achv.id) ? 'unlocked' : ''}`;
+    div.innerHTML = `
+      <div class="title">${achievements.unlocked.includes(achv.id) ? '✅' : '🔒'} ${achv.name}</div>
+      <div class="desc">${achv.desc}</div>
+      <div style="font-size: 28px; opacity: 0.7; margin-top: 8px;">${achv.reward}</div>
+    `;
+    achvList.appendChild(div);
+  });
+}
+
+// ─── Reset Game Button ────────────────────────────────────────────
+const resetBtn = document.getElementById('reset-game-btn');
+
+resetBtn.onclick = () => {
+  if (!confirm("Reset ALL progress? This will delete high score, achievements, level, etc.\n\nAre you sure?")) {
+    return;
+  }
+  
+  // Clear localStorage
+  localStorage.removeItem('marketHustle');
+  
+  // Reset in-memory variables
+  // Reset in-memory variables
+  highScore = 0;
+  tycoonLevel = 1;
+  achievements = {
+    unlocked: [],
+    counters: { sold: {apple:0, banana:0, fish:0, bread:0, milk:0}, stolen: 0 },
+    bonuses: { profitMultiplier: 1.0, maxInvBonus: 0 }
+  };
+  MAX_INV = 5;
+
+  // NEW LINES:
+  currentDay = 1;
+  player.money = START_MONEY;
+  totalEarnings = START_MONEY;
+
+  // Reset player & game state
+  player.inventory = [];
+  dayStartMoney = START_MONEY;
+
+  // Regenerate world
+  generateWorld();
+
+  // Close menu & refresh UI
+  achvUI.style.display = 'none';
+  updateUI();
+  alert("Game reset! Fresh start.");
+};
+
+// ─── Close achievements menu when clicking on canvas ──────────────
+canvas.addEventListener('click', (e) => {
+  // Only close if menu is visible
+  if (achvUI.style.display === 'block') {
+    // Prevent this from interfering with pathfinding clicks
+    // (we only close if menu is open — pathfinding still works underneath)
+    achvUI.style.display = 'none';
+  }
+});
+
+// Also support touch (mobile)
+canvas.addEventListener('touchstart', (e) => {
+  if (achvUI.style.display === 'block') {
+    achvUI.style.display = 'none';
+    // Don't preventDefault here — we still want taps to move the player
+  }
+});
+
+// ─── Update ─────────────────────────────────────
+let last = performance.now();
+
+function update(now) {
+  const dt = (now - last)/1000;
+  last = now;
+
+  if (isNight) {
+    const fadeElapsed = now - fadeStart;
+    if (fadeDirection === 1) {
+      fadeAlpha = Math.min(1, fadeElapsed / NIGHT_FADE_TIME);
+      if (fadeAlpha >= 1) {
+        fadeDirection = -1;
+        fadeStart = now + NIGHT_HOLD_TIME;
+
+        const dayProfit = player.money - dayStartMoney;
+        const newHigh = totalEarnings > highScore;
+
+        if (newHigh) {
+          highScore = totalEarnings;
+          
+          // Better level formula: starts at 1, grows more slowly at first
+          const newLevel = Math.max(1, Math.floor(Math.log10(totalEarnings + 1)) + 1);
+          // Examples:
+          //   $10     → Level 1
+          //   $100    → Level 2
+          //   $1,000  → Level 3
+          //   $10,000 → Level 5
+          //   $100k   → Level 7 etc.
+
+          if (newLevel > tycoonLevel) {
+            tycoonLevel = newLevel;
+            alert(`Day ${currentDay} Summary\n\nToday's ${dayProfit >= 0 ? 'profit' : 'loss'}: $${Math.abs(dayProfit)}\nAll-time earnings: $${totalEarnings}\n🎉 NEW HIGH SCORE!\nLEVEL UP → Level ${tycoonLevel}!`);
+          } else {
+            alert(`Day ${currentDay} Summary\n\nToday's ${dayProfit >= 0 ? 'profit' : 'loss'}: $${Math.abs(dayProfit)}\nAll-time earnings: $${totalEarnings}\nNew high score!`);
+          }
+        } else {
+          alert(`Day ${currentDay} Summary\n\nToday's ${dayProfit >= 0 ? 'profit' : 'loss'}: $${Math.abs(dayProfit)}\nAll-time earnings: $${totalEarnings}`);
+        }
+      }
+    } else if (fadeElapsed >= 0) {
+      fadeAlpha = Math.max(0, 1 - fadeElapsed / NIGHT_FADE_TIME);
+      if (fadeAlpha <= 0) {
+        isNight = false;
+        nightOverlay.style.display = 'none';
+        currentDay++;
+        generateWorld();
+        updateUI();
+      }
+    }
+    timeLeftEl.textContent = '0';
+    return;
+  }
+
+  if (now - lastSecond >= 1000) {
+    if (secondsLeft > 0) {
+      secondsLeft--;
+      timeLeftEl.textContent = secondsLeft;
+    }
+    lastSecond += 1000;
+  }
+
+  if (secondsLeft <= 0) {
+    isNight = true;
+    fadeDirection = 1;
+    fadeStart = now;
+    fadeAlpha = 0;
+    nightOverlay.style.display = 'flex';
+    player.path = [];
+    timeLeftEl.textContent = '0';
+  }
+
+  if (player.path.length > 0) {
+    const next = player.path[0];
+    const dx = next.x - player.x;
+    const dy = next.y - player.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 0.08) {
+      player.path.shift();
+    } else {
+      const s = PLAYER_SPEED / dist;
+      player.x += dx * s;
+      player.y += dy * s;
+    }
+  }
+
+  if (!dragging) {
+    camTargetX = player.x;
+    camTargetY = player.y;
+  }
+  camX += (camTargetX - camX) * 0.12;
+  camY += (camTargetY - camY) * 0.12;
+
+  npcs.forEach(npc => {
+    npc.targetTimer -= dt * 1000;
+    if (npc.targetTimer <= 0) {
+      npc.vx = (Math.random() - 0.5) * 0.8;
+      npc.vy = (Math.random() - 0.5) * 0.8;
+      npc.targetTimer = Math.random() * 12000 + 4000;
+      npc.stopped = Math.random() < 0.35;
+      npc.stopTimer = npc.stopped ? Math.random() * 6000 + 2000 : 0;
+    }
+
+    if (npc.stopped) {
+      npc.stopTimer -= dt * 1000;
+      if (npc.stopTimer <= 0) npc.stopped = false;
+    } else {
+      let nx = npc.x + npc.vx * NPC_SPEED * 60 * dt;
+      let ny = npc.y + npc.vy * NPC_SPEED * 60 * dt;
+      if (isOccupied(Math.floor(nx), Math.floor(ny))) {
+        npc.vx = (Math.random() - 0.5) * 0.8;
+        npc.vy = (Math.random() - 0.5) * 0.8;
+      } else {
+        npc.x = nx;
+        npc.y = ny;
+      }
+      npc.x = Math.max(2, Math.min(WORLD_W-2, npc.x));
+      npc.y = Math.max(2, Math.min(WORLD_H-2, npc.y));
+    }
+  });
+
+  thieves.forEach(thief => {
+    thief.targetTimer -= dt * 1000;
+    if (thief.targetTimer <= 0) {
+      thief.vx = (Math.random() - 0.5) * 0.8;
+      thief.vy = (Math.random() - 0.5) * 0.8;
+      thief.targetTimer = Math.random() * 12000 + 4000;
+      thief.stopped = Math.random() < 0.35;
+      thief.stopTimer = thief.stopped ? Math.random() * 6000 + 2000 : 0;
+    }
+
+    if (thief.stopped) {
+      thief.stopTimer -= dt * 1000;
+      if (thief.stopTimer <= 0) thief.stopped = false;
+    } else {
+      let nx = thief.x + thief.vx * NPC_SPEED * 60 * dt;
+      let ny = thief.y + thief.vy * NPC_SPEED * 60 * dt;
+      if (isOccupied(Math.floor(nx), Math.floor(ny))) {
+        thief.vx = (Math.random() - 0.5) * 0.8;
+        thief.vy = (Math.random() - 0.5) * 0.8;
+      } else {
+        thief.x = nx;
+        thief.y = ny;
+      }
+      thief.x = Math.max(2, Math.min(WORLD_W-2, thief.x));
+      thief.y = Math.max(2, Math.min(WORLD_H-2, thief.y));
+    }
+
+    thief.pulse = (Math.sin(now * 0.005) + 1) / 2;
+  });
+
+  trySteal(now);
+
+  const near = getNearestStall();
+  if (near && !isNight && player.path.length === 0 && Math.hypot(near.x + 0.5 - player.x, near.y + 0.5 - player.y) < 1.2) {
+    const buyPrice = getStallBuyPrice(near);
+    const sellPrice = getStallSellPrice(near);
+    stallInfo.textContent = `${near.type.toUpperCase()} stall`;
+    priceInfo.innerHTML = `Buy: $${buyPrice}<br>Sells for: $${sellPrice}`;
+    buyBtn.disabled = player.money < buyPrice || player.inventory.length >= MAX_INV || near.stock <= 0;
+    sellBtn.disabled = !player.inventory.some(it => it.type === near.type) || sellPrice <= 0;
+    buyBtn.style.display  = buyBtn.disabled  ? 'none' : 'inline-block';
+    sellBtn.style.display = sellBtn.disabled ? 'none' : 'inline-block';
+    interactUI.classList.add('visible');
+  } else {
+    interactUI.classList.remove('visible');
+  }
+
+  for (let i = floatTexts.length - 1; i >= 0; i--) {
+    const ft = floatTexts[i];
+    ft.y += ft.vy;
+    ft.life -= dt * 1000;
+    ft.alpha = ft.life / FLOAT_TEXT_LIFETIME;
+    if (ft.life <= 0) floatTexts.splice(i, 1);
+  }
+}
+
+// ─── Render ─────────────────────────────────────
+function render() {
+  const dayProgress = (DAY_LENGTH_SECONDS - secondsLeft) / DAY_LENGTH_SECONDS;
+  let tint = 0;
+  if (dayProgress > 0.75) {
+    tint = (dayProgress - 0.75) / 0.25;
+  }
+
+  ctx.fillStyle = '#fdf6e3';
+  ctx.fillRect(0,0,W,H);
+
+  if (tint > 0) {
+    ctx.fillStyle = `rgba(255,140,0,${tint*0.4})`;
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = `rgba(0,0,0,${tint*0.6})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  const extra = (dragging || player.path.length > 0) ? EXTRA_TILES_MOVING : EXTRA_TILES_NORMAL;
+
+  const left   = camX - VIEW_TILES_W/2 - extra;
+  const right  = camX + VIEW_TILES_W/2 + extra;
+  const top    = camY - VIEW_TILES_H/2 - extra;
+  const bot    = camY + VIEW_TILES_H/2 + extra;
+
+  for (const d of decor) {
+    if (d.x < left || d.x > right || d.y < top || d.y > bot) continue;
+    const sx = Math.round((d.x - camX) * TILE + W/2);
+    const sy = Math.round((d.y - camY) * TILE + H/2);
+    ctx.fillStyle = d.color;
+    ctx.fillRect(sx, sy, TILE, TILE);
+  }
+
+  for (const stall of stalls) {
+    if (stall.x < left || stall.x > right || stall.y < top || stall.y > bot) continue;
+
+    const sx = Math.round((stall.x - camX) * TILE + W/2);
+    const sy = Math.round((stall.y - camY) * TILE + H/2);
+
+    ctx.fillStyle = '#8d5524';
+    ctx.fillRect(sx, sy, TILE, TILE);
+
+    if (stall.stock > 0) {
+      const bubbleSize = TILE * 0.78;
+      const bubbleX = sx + (TILE - bubbleSize)/2;
+      const bubbleY = sy + (TILE - bubbleSize)/2 - TILE*0.08;
+
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.roundRect(bubbleX, bubbleY, bubbleSize, bubbleSize, 24);
+      ctx.fill();
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 6;
+
+      const data = ITEMS[stall.type];
+      ctx.font = `${bubbleSize * 0.82}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = data.color;
+      ctx.fillText(data.emoji, bubbleX + bubbleSize/2, bubbleY + bubbleSize/2);
+
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  npcs.forEach(npc => {
+    if (npc.x < left || npc.x > right || npc.y < top || npc.y > bot) return;
+    const nx = Math.round((npc.x - camX) * TILE + W/2);
+    const ny = Math.round((npc.y - camY) * TILE + H/2);
+    ctx.fillStyle = npc.color;
+    ctx.beginPath();
+    ctx.arc(nx, ny, TILE * 0.28, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  thieves.forEach(thief => {
+    if (thief.x < left || thief.x > right || thief.y < top || thief.y > bot) return;
+    const nx = Math.round((thief.x - camX) * TILE + W/2);
+    const ny = Math.round((thief.y - camY) * TILE + H/2);
+    const pulseAlpha = 0.6 + thief.pulse * 0.4;
+    ctx.fillStyle = `rgba(255,0,0,${pulseAlpha})`;
+    ctx.beginPath();
+    ctx.arc(nx, ny, TILE * 0.32, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  const px = Math.round((player.x - camX)*TILE + W/2);
+  const py = Math.round((player.y - camY)*TILE + H/2);
+  ctx.fillStyle = '#27ae60';
+  ctx.beginPath();
+  ctx.arc(px, py, TILE*0.38, 0, Math.PI*2);
+  ctx.fill();
+
+  player.inventory.forEach((it, i) => {
+    const data = ITEMS[it.type];
+    const ix = px + (i - player.inventory.length/2 + 0.5)*72 - 36;
+    const iy = py - 140;
+    ctx.font = '84px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(data.emoji, ix, iy);
+  });
+
+  floatTexts.forEach(ft => {
+    const fx = Math.round((ft.x - camX)*TILE + W/2 + TILE*0.4);
+    const fy = Math.round((ft.y - camY)*TILE + H/2 - TILE*0.3);
+    ctx.font = '48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = ft.color;
+    ctx.globalAlpha = ft.alpha;
+    ctx.fillText(ft.text, fx, fy);
+    ctx.globalAlpha = 1;
+  });
+
+  if (fadeAlpha > 0) {
+    ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+// ─── Loop ───────────────────────────────────────
+function loop(t) {
+  update(t);
+  render();
+  requestAnimationFrame(loop);
+}
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+loadGame();
+if (localStorage.getItem('marketHustle')) {
+  console.log(`Continued game — Day ${currentDay}, Money $${player.money}`);
+  // Optional: show a small float text or alert
+  // addFloatText(player.x, player.y, `Welcome back!\nDay ${currentDay}`, '#2ecc71');
+}
+generateWorld();
+
+// Safety: make sure totalEarnings isn't lower than current money after load
+if (totalEarnings < player.money) {
+  totalEarnings = player.money;
+}
+
+updateUI();
+updateAchievementsUI();
+requestAnimationFrame(loop);
+
+// Auto-save every 30 seconds
+setInterval(saveGame, 30000);
+</script>
+</body>
+</html>
