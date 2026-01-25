@@ -147,18 +147,69 @@
     transform: scale(0.95);
   }
 
-  #night-overlay.ban {
+    #night-overlay.ban {
     background: linear-gradient(rgba(80,0,0,0.9), rgba(20,0,0,0.95));
     color: #ffdddd;
     font-weight: bold;
     text-shadow: 0 0 10px #000, 2px 2px 6px #000;
+  }
+
+  /* Bank UI Styles */
+  #bank-ui {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.92);
+    border: 5px solid #f39c12;
+    border-radius: 20px 20px 0 0;
+    padding: 28px 48px;
+    color: #eee;
+    font-size: 20px;
+    text-align: center;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    line-height: 1.4;
+    min-width: 420px;
+    transition: transform 0.4s ease-out;
+    transform: translateX(-50%) translateY(100%);
+  }
+  #bank-ui.visible {
+    display: block;
+    pointer-events: all;
+    transform: translateX(-50%) translateY(0);
+  }
+  #bank-ui input {
+    font-family: 'Press Start 2P', 'VT323', monospace;
+    font-size: 20px;
+    padding: 12px 20px;
+    border: 3px solid #f39c12;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    width: 200px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  #bank-ui input:focus {
+    outline: none;
+    border-color: #f1c40f;
+    background: rgba(255,255,255,0.2);
+  }
+  .action-btn.bank {
+    background: #f39c12;
+  }
+  .action-btn.bank.withdraw {
+    background: #e67e22;
   }
 </style>
 </head>
 <body>
 
 <div id="ui">
-  <div>Money: $<span id="money">10</span> | Day: <span id="day">1</span> | Time left: <span id="time-left">120</span>s</div>
+  <div>Money: $<span id="money">10</span> | Bank: $<span id="bank-balance">0</span></div>
+  <div>Day: <span id="day">1</span> | Time left: <span id="time-left">120</span>s</div>
 </div>
 
 <div id="inventory-ui">
@@ -170,6 +221,15 @@
   <div id="price-info"></div>
   <button id="buy-btn"  class="action-btn" onclick="tryBuy()">Buy</button>
   <button id="sell-btn" class="action-btn sell" onclick="trySell()">Sell</button>
+</div>
+
+<div id="bank-ui">
+  <div style="font-size: 24px; margin-bottom: 12px;">🏦 BANK</div>
+  <div id="bank-info" style="margin-bottom: 16px;"></div>
+  <input type="number" id="bank-amount" placeholder="Amount" min="0" />
+  <br>
+  <button id="deposit-btn" class="action-btn bank" onclick="tryDeposit()">Deposit</button>
+  <button id="withdraw-btn" class="action-btn bank withdraw" onclick="tryWithdraw()">Withdraw</button>
 </div>
 
 <div id="menu-btn" style="
@@ -263,6 +323,11 @@ const priceInfo = document.getElementById('price-info');
 const buyBtn    = document.getElementById('buy-btn');
 const sellBtn   = document.getElementById('sell-btn');
 const nightOverlay = document.getElementById('night-overlay');
+const bankUI = document.getElementById('bank-ui');
+const bankInfo = document.getElementById('bank-info');
+const bankAmount = document.getElementById('bank-amount');
+const depositBtn = document.getElementById('deposit-btn');
+const withdrawBtn = document.getElementById('withdraw-btn');
 
 let W, H;
 
@@ -421,6 +486,8 @@ let decor = [];
 let npcs = [];
 let thieves = [];
 let floatTexts = [];
+let bank = { x: 0, y: 0 };
+let bankBalance = 0;
 
 let currentDay = 1;
 let secondsLeft = DAY_LENGTH_SECONDS;
@@ -534,6 +601,7 @@ function loadGame() {
     achievements = data.achievements || achievements;
     currentDay = data.currentDay || 1;
     player.money = data.money || START_MONEY;
+    bankBalance = data.bankBalance || 0;
     MAX_INV += achievements.bonuses.maxInvBonus || 0;
     totalEarnings = Math.max(totalEarnings, player.money);
   }
@@ -546,6 +614,7 @@ function saveGame() {
     achievements,
     currentDay,
     money: player.money,
+    bankBalance,
     lastPlayed: Date.now()
   }));
 }
@@ -576,6 +645,9 @@ function updateUI() {
   dayEl.textContent     = currentDay;
   timeLeftEl.textContent = secondsLeft;
   invCount.textContent  = `Inventory: ${player.inventory.length}/${MAX_INV}`;
+  
+    const bankBalanceEl = document.getElementById('bank-balance');
+  if (bankBalanceEl) bankBalanceEl.textContent = bankBalance;
   
   const hsEl = document.getElementById('high-score');
   const mhsEl = document.getElementById('menu-high-score');
@@ -634,7 +706,22 @@ function generateWorld() {
     });
   }
 
-  stalls.sort((a,b) => a.y - b.y);
+    stalls.sort((a,b) => a.y - b.y);
+
+  // Spawn bank near player (5-8 tiles away)
+  let bankX, bankY, attempts = 0;
+  do {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 5 + Math.random() * 3;
+    bankX = Math.floor(player.x + Math.cos(angle) * dist);
+    bankY = Math.floor(player.y + Math.sin(angle) * dist);
+    attempts++;
+  } while ((isOccupied(bankX, bankY) || bankX < 3 || bankX >= WORLD_W - 3 || bankY < 3 || bankY >= WORLD_H - 3) && attempts < 50);
+  
+  if (attempts < 50) {
+    world[bankY][bankX] = 1;
+    bank = { x: bankX, y: bankY };
+  }
 
   const decorColors = ['#c0392b','#e67e22','#f39c12','#f1c40f','#27ae60','#2980b9','#8e44ad','#7f8c8d','#34495e','#d35400'];
   for (let i = 0; i < 850; i++) {
@@ -803,8 +890,49 @@ function trySell() {
       achievements.counters.sold[it.type]++;
     }
   }
-  updateUI();
+    updateUI();
   checkAchievements();
+}
+
+// ─── Bank Functions ─────────────────────────────
+function getNearBank() {
+  if (!bank) return false;
+  const dist = Math.hypot(bank.x + 0.5 - player.x, bank.y + 0.5 - player.y);
+  return dist <= INTERACT_RANGE;
+}
+
+function tryDeposit() {
+  const amount = parseInt(bankAmount.value) || 0;
+  if (amount <= 0 || amount > player.money) {
+    addFloatText(player.x, player.y, 'Invalid amount!', '#e74c3c');
+    return;
+  }
+  
+  player.money -= amount;
+  bankBalance += amount;
+  totalEarnings -= amount; // Remove from earnings since it's in bank
+  
+  addFloatText(player.x, player.y, `Deposited $${amount}`, '#f39c12');
+  bankAmount.value = '';
+  updateUI();
+  saveGame();
+}
+
+function tryWithdraw() {
+  const amount = parseInt(bankAmount.value) || 0;
+  if (amount <= 0 || amount > bankBalance) {
+    addFloatText(player.x, player.y, 'Invalid amount!', '#e74c3c');
+    return;
+  }
+  
+  bankBalance -= amount;
+  player.money += amount;
+  totalEarnings += amount; // Add back to earnings
+  
+  addFloatText(player.x, player.y, `Withdrew $${amount}`, '#2ecc71');
+  bankAmount.value = '';
+  updateUI();
+  saveGame();
 }
 
 // ─── Thief stealing ─────────────────────────────
@@ -874,28 +1002,29 @@ function handleTackle(entity, type) {
     return;
   }
   
-  if (type === 'civilian') {
+    if (type === 'civilian') {
     const banDays = 3;
 
     // Record the ban end day (for save/load and future checks)
     banUntilDay = currentDay + banDays;
 
-    // Immediate punishment
+    // Immediate punishment - bank balance is SAFE!
     player.money = 0;
     player.inventory = [];
-    totalEarnings = 0;
+    totalEarnings = bankBalance; // Keep bank balance in total earnings
     player.path = [];
 
     // Show a prominent full-screen message for 5 seconds
     nightOverlay.style.display = 'flex';
     nightOverlay.classList.add('ban');   // we'll style this red/dark
-    nightOverlay.innerHTML = `
+        nightOverlay.innerHTML = `
       <div style="font-size: 20px; color: #ff4444; margin-bottom: 20px;">
         BANNED!
       </div>
       <div style="font-size: 20px;">
         You tackled a civilian<br>
-        All money confiscated<br><br>
+        Cash confiscated<br>
+        Bank balance safe: $${bankBalance}<br><br>
         Back on day ${banUntilDay}
       </div>
     `;
@@ -993,8 +1122,14 @@ canvas.addEventListener('touchstart', e => {
     return;
   }
 
-  // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
+    // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
   let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  
+  // Check if tapping bank
+  if (bank && bank.x === tapTileX && bank.y === tapTileY) {
+    const adj = getClosestAdjacentToStall(bank.x, bank.y, player.x, player.y);
+    if (adj) goal = adj;
+  }
   
   let tappedStall = null;
   for (const stall of stalls) {
@@ -1062,8 +1197,14 @@ canvas.addEventListener('mousedown', e => {
     return;
   }
 
-  // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
+    // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
   let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  
+  // Check if tapping bank
+  if (bank && bank.x === tapTileX && bank.y === tapTileY) {
+    const adj = getClosestAdjacentToStall(bank.x, bank.y, player.x, player.y);
+    if (adj) goal = adj;
+  }
   
   let tappedStall = null;
   for (const stall of stalls) {
@@ -1138,9 +1279,10 @@ resetBtn.onclick = () => {
   };
   MAX_INV = 5;
   
-  currentDay = 1;
+    currentDay = 1;
   player.money = START_MONEY;
   totalEarnings = START_MONEY;
+  bankBalance = 0;
   
   player.inventory = [];
   dayStartMoney = START_MONEY;
@@ -1237,7 +1379,7 @@ function update(now) {
       // Show message only on the final day
       if (currentDay >= banUntilDay) {
         addFloatText(player.x + 0.5, player.y - 1, "Ban lifted!", "#2ecc71");
-        player.money = START_MONEY;       // give starting money back
+        player.money = 0;
         totalEarnings = Math.max(totalEarnings, START_MONEY);
         banUntilDay = 0;                  // clear ban
       } else {
@@ -1381,19 +1523,32 @@ function update(now) {
 
   trySteal(now);
 
-  const near = getNearestStall();
-  if (near && !isNight && player.path.length === 0 && Math.hypot(near.x + 0.5 - player.x, near.y + 0.5 - player.y) < 1.2) {
-    const buyPrice = getStallBuyPrice(near);
-    const sellPrice = getStallSellPrice(near);
-    stallInfo.textContent = `${near.type.toUpperCase()} stall`;
-    priceInfo.innerHTML = `Buy: $${buyPrice}<br>Sells for: $${sellPrice}`;
-    buyBtn.disabled = player.money < buyPrice || player.inventory.length >= MAX_INV || near.stock <= 0;
-    sellBtn.disabled = !player.inventory.some(it => it.type === near.type) || sellPrice <= 0;
-    buyBtn.style.display  = buyBtn.disabled  ? 'none' : 'inline-block';
-    sellBtn.style.display = sellBtn.disabled ? 'none' : 'inline-block';
-    interactUI.classList.add('visible');
-  } else {
+    // Check bank proximity
+  const nearBank = getNearBank();
+  if (nearBank && !isNight && player.path.length === 0) {
+    bankInfo.innerHTML = `Cash: $${player.money}<br>Bank: $${bankBalance}`;
+    depositBtn.disabled = player.money <= 0;
+    withdrawBtn.disabled = bankBalance <= 0;
+    bankUI.classList.add('visible');
     interactUI.classList.remove('visible');
+  } else {
+    bankUI.classList.remove('visible');
+    
+    // Check stall proximity
+    const near = getNearestStall();
+    if (near && !isNight && player.path.length === 0 && Math.hypot(near.x + 0.5 - player.x, near.y + 0.5 - player.y) < 1.2) {
+      const buyPrice = getStallBuyPrice(near);
+      const sellPrice = getStallSellPrice(near);
+      stallInfo.textContent = `${near.type.toUpperCase()} stall`;
+      priceInfo.innerHTML = `Buy: $${buyPrice}<br>Sells for: $${sellPrice}`;
+      buyBtn.disabled = player.money < buyPrice || player.inventory.length >= MAX_INV || near.stock <= 0;
+      sellBtn.disabled = !player.inventory.some(it => it.type === near.type) || sellPrice <= 0;
+      buyBtn.style.display  = buyBtn.disabled  ? 'none' : 'inline-block';
+      sellBtn.style.display = sellBtn.disabled ? 'none' : 'inline-block';
+      interactUI.classList.add('visible');
+    } else {
+      interactUI.classList.remove('visible');
+    }
   }
 
   // Floating text update – stack vertically, slow movement
@@ -1444,6 +1599,36 @@ function render() {
     const sy = Math.round((d.y - camY) * TILE + H/2);
     ctx.fillStyle = d.color;
     ctx.fillRect(sx, sy, TILE, TILE);
+  }
+
+    // Render bank
+  if (bank && bank.x >= left && bank.x <= right && bank.y >= top && bank.y <= bot) {
+    const bx = Math.round((bank.x - camX) * TILE + W/2);
+    const by = Math.round((bank.y - camY) * TILE + H/2);
+    
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(bx, by, TILE, TILE);
+    
+    const bubbleSize = TILE * 0.78;
+    const bubbleX = bx + (TILE - bubbleSize)/2;
+    const bubbleY = by + (TILE - bubbleSize)/2 - TILE*0.08;
+    
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.roundRect(bubbleX, bubbleY, bubbleSize, bubbleSize, 24);
+    ctx.fill();
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 6;
+    
+    ctx.font = `${bubbleSize * 0.82}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f39c12';
+    ctx.fillText('🏦', bubbleX + bubbleSize/2, bubbleY + bubbleSize/2);
+    
+    ctx.shadowBlur = 0;
   }
 
   for (const stall of stalls) {
