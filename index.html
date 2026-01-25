@@ -3,22 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <title>Market Hustle</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
   body {
     margin:0;
     height:100vh;
     background:#000;
-    font-family: Arial, sans-serif;
+    font-family: 'Press Start 2P', 'VT323', monospace;   /* ← changed */
     overflow: hidden;
     image-rendering: pixelated;
     touch-action: none;
   }
+
+  #ui, #inventory-ui, #interact-ui, #menu-btn, #achievements-ui {
+    font-family: 'Press Start 2P', 'VT323', monospace;
+  }
+
+  /* Make UI text slightly larger and more readable */
   #ui {
     position: absolute;
     top: 16px;
     left: 16px;
     color: #fff;
-    font-size: 42px;
+    font-size: 20px;
     pointer-events: none;
     user-select: none;
     text-shadow: 0 0 10px #000, 0 0 16px #000;
@@ -30,7 +37,7 @@
     top: 16px;
     right: 16px;
     color: #fff;
-    font-size: 42px;
+    font-size: 20px;
     text-shadow: 0 0 10px #000;
     pointer-events: none;
     user-select: none;
@@ -46,7 +53,7 @@
     border-radius: 20px 20px 0 0;
     padding: 28px 48px;
     color: #eee;
-    font-size: 52px;
+    font-size: 20px;
     text-align: center;
     pointer-events: none;
     display: none;
@@ -68,9 +75,14 @@
     color: white;
     padding: 18px 48px;
     border-radius: 12px;
-    font-size: 48px;
+    font-size: 20px;
     cursor: pointer;
     pointer-events: all;
+  }
+
+  .action-btn {
+    font-family: 'Press Start 2P', 'VT323', monospace;
+    font-size: 20px;          /* slightly smaller for pixel font */
   }
   .action-btn.sell {
     background: #e67e22;
@@ -89,7 +101,7 @@
     display: none;
     z-index: 20;
     color: #fff;
-    font-size: 72px;
+    font-size: 20px;
     text-align: center;
     align-items: center;
     justify-content: center;
@@ -104,7 +116,7 @@
     transform: scale(1.1);
   }
   #achievements-ui h3 {
-    margin: 0 0 12px 0; font-size: 42px; color: #f1c40f;
+    margin: 0 0 12px 0; font-size: 20px; color: #f1c40f;
   }
   .achievement {
     margin: 20px 0; padding: 20px; 
@@ -112,8 +124,35 @@
     border-radius: 16px; border-left: 6px solid #4caf50;
   }
   .achievement.unlocked { border-left-color: #f1c40f; background: rgba(241,196,15,0.2); }
-  .achievement .title { font-size: 44px; margin-bottom: 8px; }
-  .achievement .desc { opacity: 0.9; font-size: 32px; }
+  .achievement .title { font-size: 20px; margin-bottom: 8px; }
+  .achievement .desc { opacity: 0.9; font-size: 20px; }
+
+  .tackle-highlight {
+    box-shadow: 0 0 20px #ff4444, inset 0 0 20px rgba(255,68,68,0.3);
+    animation: pulse 1s infinite;
+  }
+  .tackle-highlight.civilian {
+    box-shadow: 0 0 20px #ffaa00, inset 0 0 20px rgba(255,170,0,0.3);
+    animation: pulse 1.5s infinite reverse;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  #tackle-btn:hover {
+    transform: scale(1.1);
+  }
+  #tackle-btn:active {
+    transform: scale(0.95);
+  }
+
+  #night-overlay.ban {
+    background: linear-gradient(rgba(80,0,0,0.9), rgba(20,0,0,0.95));
+    color: #ffdddd;
+    font-weight: bold;
+    text-shadow: 0 0 10px #000, 2px 2px 6px #000;
+  }
 </style>
 </head>
 <body>
@@ -138,7 +177,7 @@
   width: 80px; height: 80px; background: #e74c3c; 
   border-radius: 50%; cursor: pointer; 
   display: flex; align-items: center; justify-content: center;
-  font-size: 48px; color: white; text-shadow: none;
+  font-size: 20px; color: white; text-shadow: none;
   pointer-events: all; z-index: 15;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   transition: transform 0.2s;
@@ -146,19 +185,45 @@
   ≡
 </div>
 
+<!-- Tackle button - always visible, positioned under menu -->
+<button id="tackle-btn" 
+        class="action-btn" 
+        onclick="startTackleMode()"
+        style="
+          position: absolute;
+          top: 106px;           /* 16px + 80px + 10px gap */
+          right: 120px;
+          width: 80px;
+          height: 80px;
+          background: #9b59b6;
+          color: white;
+          font-size: 20px;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          z-index: 15;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: all;
+        ">
+  🗡️
+</button>
+
 <div id="achievements-ui" style="
   position: absolute; top: 0; right: 0;
   width: 420px; height: 100vh;
   background: rgba(0,0,0,0.95); color: #fff;
-  font-size: 36px; padding: 32px;
+  font-size: 20px; padding: 32px;
   display: none; overflow-y: auto;
   z-index: 25;
 ">
-  <div style="font-size: 52px; margin-bottom: 24px; text-align: center;">
+  <div style="font-size: 20px; margin-bottom: 24px; text-align: center;">
     🏆 ACHIEVEMENTS
   </div>
   <div id="achievements-list"></div>
-  <div style="margin-top: 48px; font-size: 28px; opacity: 0.8;">
+  <div style="margin-top: 48px; font-size: 20px; opacity: 0.8;">
     <div>Tycoon Level: <span id="menu-tycoon-level">1</span></div>
     <div>High Score: $<span id="menu-high-score">0</span></div>
     <div>Total Achievements: <span id="achv-count">0</span>/25</div>
@@ -167,7 +232,7 @@
     margin-top: 40px;
     width: 100%;
     padding: 20px;
-    font-size: 36px;
+    font-size: 20px;
     background: #e74c3c;
     color: white;
     border: none;
@@ -217,7 +282,8 @@ const NPC_SPEED = 0.025;
 const INTERACT_RANGE = 3.0;
 const NPC_COUNT = 380;
 const THIEF_COUNT = 20;
-const FLOAT_TEXT_LIFETIME = 1800;
+const FLOAT_TEXT_LIFETIME = 3800;   // 3.8 seconds – readable but not too long
+const FLOAT_TEXT_SPEED   = 0.018;   // slower upward drift
 const EXTRA_TILES_NORMAL = 10;
 const EXTRA_TILES_MOVING = 10;
 const THIEF_STEAL_RANGE = 2;
@@ -229,6 +295,16 @@ const TAP_PREFERENCE_WINDOW = 3000; // ms — how long we prefer tapped stall
 
 // ─── NPC Sprite Sheet ─────────────────────────────────────────────
 let npcSpriteSheet = null;
+
+let playerSprite = null;
+
+function loadPlayerSprite() {
+  return new Promise((resolve) => {
+    playerSprite = new Image();
+    playerSprite.onload = resolve;
+    playerSprite.src = 'player.png';  // change to 'assets/player.png' if needed
+  });
+}
 
 const SPRITE_W = 120;
 const SPRITE_H = 130;
@@ -311,13 +387,14 @@ function findPath(start, goal) {
 
 function addFloatText(x, y, text, color) {
   floatTexts.push({
-    x, y: y - 0.3,
-    text,
-    color,
-    alpha: 1,
-    vy: -0.06,
-    life: FLOAT_TEXT_LIFETIME
-  });
+  x, y,
+  text,
+  color,
+  vy: -FLOAT_TEXT_SPEED,
+  life: FLOAT_TEXT_LIFETIME,
+  alpha: 1
+});
+
 }
 
 // ─── Items ──────────────────────────────────────
@@ -366,27 +443,84 @@ let fadeDirection = 1;
 let lastSecond = performance.now();
 let last = performance.now();
 
+let tackleMode = false;
+let tackleTargets = [];
+const TACKLE_RANGE = 3.0;
+const TACKLE_SUCCESS_CHANCE = 0.5;
+let banUntilDay = 0;
+
 // ─── NEW: Persistence & Progression ───────────────────────────────
 const ACHIEVEMENTS = [
-  {id: 'first_profit', name: 'First Win', desc: 'Make $10 profit in one day', check: () => player.money - dayStartMoney >= 10, reward: '+1 Max Inventory' },
-  {id: 'hundred', name: 'Hundredaire', desc: 'Reach $100 total earnings', check: () => totalEarnings >= 100, reward: '🏆' },
-  {id: 'thousand', name: 'Thousandaire', desc: 'Reach $1,000 total earnings', check: () => totalEarnings >= 1000, reward: '+5% Profit Bonus' },
-  {id: 'full_inv', name: 'Pack Mule', desc: 'Fill inventory to max', check: () => player.inventory.length >= MAX_INV, reward: '🐒' },
-  {id: 'speed_run', name: 'Speed Demon', desc: 'Earn $20 in under 60s', check: () => { 
-    return (DAY_LENGTH_SECONDS - secondsLeft <= 60) && (player.money - dayStartMoney >= 20); 
-  }, reward: '⚡' },
-  {id: 'no_thief', name: 'Ghost', desc: 'Complete day without getting stolen', check: () => true, reward: '👻' },
-  {id: 'apple_master', name: 'Apple Baron', desc: 'Sell 10 apples', check: () => achievements.counters.sold.apple >= 10, reward: '🍎' },
-  {id: 'fish_master', name: 'Fish Lord', desc: 'Sell 10 fish', check: () => achievements.counters.sold.fish >= 10, reward: '🐟' },
-  {id: 'day10', name: 'Veteran', desc: 'Survive 10 days', check: () => currentDay >= 11, reward: '💪' },
-  {id: 'day50', name: 'Legend', desc: 'Survive 50 days', check: () => currentDay >= 51, reward: '⭐' },
+  // ─── Basics & Early Game ────────────────────────────────────────
+  {id: 'first_profit',     name: 'First Flip',            desc: 'Make $10 profit in one day',                       check: () => player.money - dayStartMoney >= 10,                    reward: '+1 Max Inventory' },
+  {id: 'hundred',          name: 'Hundredaire',           desc: 'Reach $100 total earnings',                        check: () => totalEarnings >= 100,                                 reward: '🏆' },
+  {id: 'five_hundred',     name: 'Half-Thousandaire',     desc: 'Reach $500 total earnings',                        check: () => totalEarnings >= 500,                                 reward: '💵' },
+  {id: 'thousand',         name: 'Thousandaire',          desc: 'Reach $1,000 total earnings',                      check: () => totalEarnings >= 1000,                                reward: '+5% Profit Bonus' },
+  {id: 'five_thousand',    name: 'Rising Hustler',        desc: 'Reach $5,000 total earnings',                      check: () => totalEarnings >= 5000,                                reward: '+3% Profit Bonus' },
+  {id: 'ten_thousand',     name: 'Market Player',         desc: 'Reach $10,000 total earnings',                     check: () => totalEarnings >= 10000,                               reward: '+8% Profit Bonus' },
+  {id: 'fifty_thousand',   name: 'Merchant Prince',       desc: 'Reach $50,000 total earnings',                     check: () => totalEarnings >= 50000,                               reward: '+12% Profit Bonus' },
+  {id: 'quarter_million',  name: 'Tycoon',                desc: 'Reach $250,000 total earnings',                    check: () => totalEarnings >= 250000,                              reward: '👑' },
+
+  // ─── Item Mastery (per type tiers) ──────────────────────────────
+  {id: 'apple_i',          name: 'Apple Rookie',          desc: 'Sell 10 apples',                                   check: () => achievements.counters.sold.apple  >= 10,              reward: '🍎' },
+  {id: 'apple_ii',         name: 'Apple Baron',           desc: 'Sell 50 apples',                                   check: () => achievements.counters.sold.apple  >= 50,              reward: '🍎×5' },
+  {id: 'apple_iii',        name: 'Apple Emperor',         desc: 'Sell 200 apples',                                  check: () => achievements.counters.sold.apple  >= 200,             reward: '🍎×20' },
+  {id: 'banana_i',         name: 'Banana Newbie',         desc: 'Sell 15 bananas',                                  check: () => achievements.counters.sold.banana >= 15,              reward: '🍌' },
+  {id: 'banana_ii',        name: 'Banana King',           desc: 'Sell 75 bananas',                                  check: () => achievements.counters.sold.banana >= 75,              reward: '🍌×5' },
+  {id: 'fish_i',           name: 'Fishmonger',            desc: 'Sell 10 fish',                                     check: () => achievements.counters.sold.fish   >= 10,              reward: '🐟' },
+  {id: 'fish_ii',          name: 'Fish Lord',             desc: 'Sell 60 fish',                                     check: () => achievements.counters.sold.fish   >= 60,              reward: '🐟×6' },
+  {id: 'bread_i',          name: 'Baker\'s Apprentice',   desc: 'Sell 12 loaves',                                   check: () => achievements.counters.sold.bread  >= 12,              reward: '🍞' },
+  {id: 'bread_ii',         name: 'Bread Baron',           desc: 'Sell 80 loaves',                                   check: () => achievements.counters.sold.bread  >= 80,              reward: '🍞×8' },
+  {id: 'milk_i',           name: 'Milk Runner',           desc: 'Sell 15 milk cartons',                             check: () => achievements.counters.sold.milk   >= 15,              reward: '🥛' },
+  {id: 'milk_ii',          name: 'Dairy Dominator',       desc: 'Sell 100 milk cartons',                            check: () => achievements.counters.sold.milk   >= 100,             reward: '🥛×10' },
+
+  // ─── Inventory & Trading Style ──────────────────────────────────
+  {id: 'full_inv',         name: 'Pack Mule',             desc: 'Fill inventory to maximum capacity',               check: () => player.inventory.length >= MAX_INV,                   reward: '🐒' },
+  {id: 'all_types',        name: 'Fruit Salad',           desc: 'Hold all 5 item types at once',                    check: () => new Set(player.inventory.map(i=>i.type)).size === 5,  reward: '🍎🍌🐟🍞🥛' },
+  {id: 'bulk_buyer',       name: 'Bulk Buyer',            desc: 'Buy 15 items in one day',                          check: () => false /* needs daily buy counter */,                  reward: '+1 Max Inventory' },
+  {id: 'fresh_flip',       name: 'Fresh Flip',            desc: 'Sell 10 items on the same day you bought them',    check: () => false /* needs fresh sale counter */,                 reward: '🌿' },
+  {id: 'long_haul',        name: 'Patient Trader',        desc: 'Sell an item bought ≥7 days ago',                 check: () => player.inventory.some(it => currentDay - it.buyDay >= 7), reward: '🕰️' },
+
+  // ─── Day / Survival Milestones ──────────────────────────────────
+  {id: 'day5',             name: 'Getting Started',       desc: 'Survive 5 days',                                   check: () => currentDay >= 6,                                      reward: '📅' },
+  {id: 'day10',            name: 'Market Regular',        desc: 'Survive 10 days',                                  check: () => currentDay >= 11,                                     reward: '💪' },
+  {id: 'day25',            name: 'Veteran',               desc: 'Survive 25 days',                                  check: () => currentDay >= 26,                                     reward: '🛡️' },
+  {id: 'day50',            name: 'Legend',                desc: 'Survive 50 days',                                  check: () => currentDay >= 51,                                     reward: '⭐' },
+  {id: 'day100',           name: 'Immortal Hustler',      desc: 'Reach day 100',                                    check: () => currentDay >= 101,                                    reward: '🏛️' },
+
+  // ─── Profit & Efficiency ────────────────────────────────────────
+  {id: 'speed_run_20',     name: 'Speed Demon',           desc: 'Earn $20 in under 60 seconds',                     check: () => (DAY_LENGTH_SECONDS - secondsLeft <= 60) && (player.money - dayStartMoney >= 20), reward: '⚡' },
+  {id: 'speed_run_50',     name: 'Lightning Hustle',      desc: 'Earn $50 in under 90 seconds',                     check: () => (DAY_LENGTH_SECONDS - secondsLeft <= 90) && (player.money - dayStartMoney >= 50), reward: '⚡⚡' },
+  {id: 'perfect_day',      name: 'Break Even Master',     desc: 'End day with exactly $0 profit/loss',              check: () => player.money === dayStartMoney && currentDay > 1,     reward: '⚖️' },
+  {id: 'big_day',          name: 'Big Day',               desc: 'Make $200 profit in one day',                      check: () => player.money - dayStartMoney >= 200,                  reward: '💰' },
+  {id: 'million_day',      name: 'Millionaire Day',       desc: 'Make $1,000 profit in one day',                    check: () => player.money - dayStartMoney >= 1000,                 reward: '💰💰' },
+
+  // ─── Thief / Risk Category ──────────────────────────────────────
+  {id: 'no_thief',         name: 'Ghost',                 desc: 'Finish a day without any theft',                   check: () => achievements.counters.stolen === 0 && currentDay > 1, reward: '👻' },
+  {id: 'thief_5',          name: 'Thief Bait',            desc: 'Get robbed 5 times',                               check: () => achievements.counters.stolen >= 5,                    reward: '😭' },
+  {id: 'thief_20',         name: 'Thief Hunter',          desc: 'Get robbed 20 times and still playing',            check: () => achievements.counters.stolen >= 20,                   reward: '🗡️' },
+  {id: 'thief_day_3',      name: 'Bad Day',               desc: 'Get robbed 3 times in one day',                    check: () => false /* needs per-day stolen counter */,             reward: '💀' },
+
+  // ─── Fun / Niche / Challenge ────────────────────────────────────
+  {id: 'rags_to_riches',   name: 'Rags to Riches',        desc: 'Go from ≤$5 to ≥$150 in one day',                  check: () => dayStartMoney <= 5 && player.money >= 150,            reward: '🪙→💎' },
+  {id: 'broke',            name: 'Rock Bottom',           desc: 'Reach $0 money',                                   check: () => player.money <= 0,                                    reward: '😢' },
+  {id: 'max_level_inv',    name: 'Inventory God',         desc: 'Reach 20 max inventory slots',                     check: () => MAX_INV >= 20,                                        reward: '🎒' },
+  {id: 'nightmare',        name: 'Market Nightmare',      desc: 'End day with negative profit 5 times',             check: () => false /* needs loss day counter */,                   reward: '🌑' },
+  {id: 'clean_slate',      name: 'Clean Slate',           desc: 'Sell everything before night 3 days in a row',     check: () => false /* needs per-day empty inv check */,            reward: '🧹' },
+  {id: 'hoarder',          name: 'Hoarder',               desc: 'Have 30+ items in inventory',                      check: () => player.inventory.length >= 30,                        reward: '📦📦📦' },
+  {id: 'one_item',         name: 'One Trick Pony',        desc: 'Sell 50 items of only one type in total',          check: () => false /* needs dominant item check */,                reward: '🎯' },
+  {id: 'thief_taker',      name: 'Thief Taker',           desc: 'Successfully tackle a thief',                     check: () => achievements.counters.thievesTackled >= 1, reward: '🗡️💰' },
 ];
 
 let highScore = 0;
 let tycoonLevel = 1;
 let achievements = {
   unlocked: [],
-  counters: { sold: {apple:0, banana:0, fish:0, bread:0, milk:0}, stolen: 0 },
+  counters: { 
+    sold: {apple:0, banana:0, fish:0, bread:0, milk:0}, 
+    stolen: 0,
+    thievesTackled: 0  // ADD THIS
+  },
   bonuses: { profitMultiplier: 1.0, maxInvBonus: 0 }
 };
 
@@ -545,7 +679,9 @@ function generateWorld() {
       targetTimer: Math.random() * 12000 + 4000,
       stopped: false,
       stopTimer: 0,
-      pulse: 0
+      pulse: 0,
+      caught: false,      // ← ADD THIS
+      fadeTime: 0         // ← ADD THIS
     });
   }
 
@@ -667,7 +803,6 @@ function trySell() {
       achievements.counters.sold[it.type]++;
     }
   }
-  if (sold > 0) alert(`Sold for $${sold}`);
   updateUI();
   checkAchievements();
 }
@@ -689,10 +824,145 @@ function trySteal(now) {
   });
 }
 
+// ─── TACKLE SYSTEM ────────────────────────────────────────────────
+function getNearbyTackleTargets() {
+  const targets = [];
+  
+  // Check NPCs (civilians)
+  for (const npc of npcs) {
+    const dist = Math.hypot(npc.x - player.x, npc.y - player.y);
+    if (dist <= TACKLE_RANGE) {
+      targets.push({ entity: npc, type: 'civilian', dist });
+    }
+  }
+  
+  // Check thieves
+  for (const thief of thieves) {
+    const dist = Math.hypot(thief.x - player.x, thief.y - player.y);
+    if (dist <= TACKLE_RANGE) {
+      targets.push({ entity: thief, type: 'thief', dist });
+    }
+  }
+  
+  return targets.sort((a, b) => a.dist - b.dist);
+}
+
+function startTackleMode() {
+  if (isNight || isBanned()) {
+    addFloatText(player.x, player.y, "Can't tackle now", '#888');
+    return;
+  }
+
+  tackleTargets = getNearbyTackleTargets();
+  
+  if (tackleTargets.length === 0) {
+    addFloatText(player.x, player.y, 'No one nearby!', '#888');
+    return;
+  }
+  
+  tackleMode = true;
+  addFloatText(player.x, player.y, 'Tap to tackle!', '#9b59b6');
+}
+
+function handleTackle(entity, type) {
+  tackleMode = false;
+  tackleTargets = [];
+  player.path = [];  // stop movement
+  
+  if (Math.random() > TACKLE_SUCCESS_CHANCE) {
+    addFloatText(player.x, player.y, '💥 Tackle missed!', '#ff4444');
+    return;
+  }
+  
+  if (type === 'civilian') {
+    const banDays = 3;
+
+    // Record the ban end day (for save/load and future checks)
+    banUntilDay = currentDay + banDays;
+
+    // Immediate punishment
+    player.money = 0;
+    player.inventory = [];
+    totalEarnings = 0;
+    player.path = [];
+
+    // Show a prominent full-screen message for 5 seconds
+    nightOverlay.style.display = 'flex';
+    nightOverlay.classList.add('ban');   // we'll style this red/dark
+    nightOverlay.innerHTML = `
+      <div style="font-size: 20px; color: #ff4444; margin-bottom: 20px;">
+        BANNED!
+      </div>
+      <div style="font-size: 20px;">
+        You tackled a civilian<br>
+        All money confiscated<br><br>
+        Back on day ${banUntilDay}
+      </div>
+    `;
+
+    // After 5 seconds → apply day skip and restore normal view
+    setTimeout(() => {
+      currentDay = banUntilDay;
+      secondsLeft = DAY_LENGTH_SECONDS;
+      dayStartMoney = 0;
+      player.money = START_MONEY;          // give back starting money
+      totalEarnings = Math.max(totalEarnings, START_MONEY);
+
+      nightOverlay.style.display = 'none';
+      nightOverlay.classList.remove('ban');
+      nightOverlay.innerHTML = `
+        <div>Market Closed</div>
+        <div>Come back tomorrow...</div>
+      `;
+
+      generateWorld();
+      updateUI();
+      addFloatText(player.x, player.y, `Ban served — Day ${currentDay}`, '#2ecc71');
+      saveGame();
+    }, 5000);   // 5000 ms = 5 seconds
+
+    updateUI();
+    saveGame();
+    return;
+  }
+    
+  // THIEF SUCCESS
+  achievements.counters.thievesTackled++;
+  addFloatText(player.x, player.y, '🗡️ CAPTURED THIEF!', '#f1c40f');
+
+  // Give items first
+  const targetItems = Math.floor(MAX_INV * 0.5);           // 3 if MAX_INV=6
+  const available = MAX_INV - player.inventory.length;
+  const toAdd = Math.min(targetItems, available);
+
+  for (let i = 0; i < toAdd; i++) {
+    const itemType = Object.keys(ITEMS)[Math.floor(Math.random() * Object.keys(ITEMS).length)];
+    player.inventory.push({ type: itemType, buyDay: currentDay, buyPrice: ITEMS[itemType].baseBuy });
+  }
+
+  addFloatText(player.x, player.y, `+${toAdd} items recovered!`, '#2ecc71');
+
+  // Remove thief **immediately** so it can't steal again
+  const thiefIndex = thieves.findIndex(t => t === entity);
+  if (thiefIndex !== -1) {
+    thieves.splice(thiefIndex, 1);
+  }
+
+  // Optional: small delay before fade if you want visual
+  // (but instant removal prevents steal-back bug)
+  updateUI();
+  checkAchievements();
+  saveGame();
+}
+
+function isBanned() {
+  return currentDay < banUntilDay;
+}
+
 // ─── Input ──────────────────────────────────────
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
-  if (e.touches.length !== 1 || isNight) return;
+  if (e.touches.length !== 1 || isNight || isBanned()) return;
 
   const t = e.touches[0];
   lastTX = t.clientX; lastTY = t.clientY;
@@ -708,8 +978,24 @@ canvas.addEventListener('touchstart', e => {
   const tapTileX = Math.floor(targetWorldX);
   const tapTileY = Math.floor(targetWorldY);
 
-  let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  // ─── TACKLE MODE CHECK ─────────────────────────────────────────
+  if (tackleMode) {
+    // Check if tapping a tackle target
+    for (const target of tackleTargets) {
+      const tx = Math.floor(target.entity.x);
+      const ty = Math.floor(target.entity.y);
+      if (tx === tapTileX && ty === tapTileY) {
+        handleTackle(target.entity, target.type);
+        return; // Exit early - tackled!
+      }
+    }
+    // If no target tapped in tackle mode, ignore movement
+    return;
+  }
 
+  // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
+  let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  
   let tappedStall = null;
   for (const stall of stalls) {
     if (stall.x === tapTileX && stall.y === tapTileY) {
@@ -746,7 +1032,8 @@ canvas.addEventListener('touchend', e => { dragging = false; e.preventDefault();
 
 let mdown = false;
 canvas.addEventListener('mousedown', e => {
-  if (isNight) return;
+  if (isNight || isBanned()) return;
+  
   mdown = true;
   lastTX = e.clientX; lastTY = e.clientY;
 
@@ -760,8 +1047,24 @@ canvas.addEventListener('mousedown', e => {
   const tapTileX = Math.floor(targetWorldX);
   const tapTileY = Math.floor(targetWorldY);
 
-  let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  // ─── TACKLE MODE CHECK ─────────────────────────────────────────
+  if (tackleMode) {
+    // Check if clicking a tackle target
+    for (const target of tackleTargets) {
+      const tx = Math.floor(target.entity.x);
+      const ty = Math.floor(target.entity.y);
+      if (tx === tapTileX && ty === tapTileY) {
+        handleTackle(target.entity, target.type);
+        return; // Exit early - tackled!
+      }
+    }
+    // If no target clicked in tackle mode, ignore movement
+    return;
+  }
 
+  // ─── NORMAL MOVEMENT/STALL LOGIC ───────────────────────────────
+  let goal = { x: tapTileX + 0.5, y: tapTileY + 0.5 };
+  
   let tappedStall = null;
   for (const stall of stalls) {
     if (stall.x === tapTileX && stall.y === tapTileY) {
@@ -810,7 +1113,7 @@ function updateAchievementsUI() {
     div.innerHTML = `
       <div class="title">${achievements.unlocked.includes(achv.id) ? '✅' : '🔒'} ${achv.name}</div>
       <div class="desc">${achv.desc}</div>
-      <div style="font-size: 28px; opacity: 0.7; margin-top: 8px;">${achv.reward}</div>
+      <div style="font-size: 20px; opacity: 0.7; margin-top: 8px;">${achv.reward}</div>
     `;
     achvList.appendChild(div);
   });
@@ -910,6 +1213,65 @@ function update(now) {
     return;
   }
 
+  if (nightOverlay.style.display === 'flex' && nightOverlay.classList.contains('ban')) {
+    // Block input/movement during ban splash screen
+    player.path = [];
+    dragging = false;
+    mdown = false;
+    tackleMode = false;
+    return;   // skip rest of update
+  }
+
+  // ─── BAN HANDLING ───────────────────────────────────────────────
+  if (banUntilDay > currentDay) {           // stricter than isBanned()
+    // During ban: fast-forward days when night ends
+    if (secondsLeft <= 0) {
+      currentDay++;
+      secondsLeft = DAY_LENGTH_SECONDS;
+      dayStartMoney = 0;
+      player.money = 0;                   // keep enforcing $0
+      player.inventory = [];
+      generateWorld();                    // new market each "day"
+      updateUI();
+
+      // Show message only on the final day
+      if (currentDay >= banUntilDay) {
+        addFloatText(player.x + 0.5, player.y - 1, "Ban lifted!", "#2ecc71");
+        player.money = START_MONEY;       // give starting money back
+        totalEarnings = Math.max(totalEarnings, START_MONEY);
+        banUntilDay = 0;                  // clear ban
+      } else {
+        // Optional: show remaining ban days
+        addFloatText(player.x + 0.5, player.y - 1, 
+                     `Banned — ${banUntilDay - currentDay} days left`, "#e74c3c");
+      }
+    }
+
+    // During ban → skip almost everything (no movement, no stealing, etc.)
+    fadeAlpha = 0.4;                    // optional: slight dark overlay
+    nightOverlay.style.display = "flex";
+    nightOverlay.innerHTML = `
+      <div>BANNED</div>
+      <div>Day ${currentDay} / ${banUntilDay}</div>
+      <div style="font-size:20px; margin-top:20px;">
+        Come back on day ${banUntilDay}
+      </div>
+    `;
+    return;   // ← this prevents player movement & most logic
+  }
+
+  // ─── not sure what this does ───────────────────────────────────────────────
+  // Near the top of update(), after handling isNight and isBanned
+  const tackleBtn = document.getElementById('tackle-btn');
+
+  if (isNight || isBanned() || tackleMode) {
+    tackleBtn.disabled = true;
+    tackleBtn.style.opacity = '0.5';
+  } else {
+    tackleBtn.disabled = false;
+    tackleBtn.style.opacity = '1';
+  }
+
   if (now - lastSecond >= 1000) {
     if (secondsLeft > 0) {
       secondsLeft--;
@@ -977,35 +1339,45 @@ function update(now) {
     }
   });
 
-  thieves.forEach(thief => {
-    thief.targetTimer -= dt * 1000;
-    if (thief.targetTimer <= 0) {
-      thief.vx = (Math.random() - 0.5) * 0.8;
-      thief.vy = (Math.random() - 0.5) * 0.8;
-      thief.targetTimer = Math.random() * 12000 + 4000;
-      thief.stopped = Math.random() < 0.35;
-      thief.stopTimer = thief.stopped ? Math.random() * 6000 + 2000 : 0;
-    }
-
-    if (thief.stopped) {
-      thief.stopTimer -= dt * 1000;
-      if (thief.stopTimer <= 0) thief.stopped = false;
+  // Update thieves (BACKWARD loop for safe removal)
+  for (let i = thieves.length - 1; i >= 0; i--) {
+    const thief = thieves[i];
+    
+    if (thief.caught) {
+      thief.fadeTime -= dt * 1000;
+      if (thief.fadeTime <= 0) {
+        thieves.splice(i, 1);  // Remove after 5s
+        continue;
+      }
     } else {
-      let nx = thief.x + thief.vx * NPC_SPEED * 60 * dt;
-      let ny = thief.y + thief.vy * NPC_SPEED * 60 * dt;
-      if (isOccupied(Math.floor(nx), Math.floor(ny))) {
+      // NORMAL thief behavior (your existing code)
+      thief.targetTimer -= dt * 1000;
+      if (thief.targetTimer <= 0) {
         thief.vx = (Math.random() - 0.5) * 0.8;
         thief.vy = (Math.random() - 0.5) * 0.8;
-      } else {
-        thief.x = nx;
-        thief.y = ny;
+        thief.targetTimer = Math.random() * 12000 + 4000;
+        thief.stopped = Math.random() < 0.35;
+        thief.stopTimer = thief.stopped ? Math.random() * 6000 + 2000 : 0;
       }
-      thief.x = Math.max(2, Math.min(WORLD_W-2, thief.x));
-      thief.y = Math.max(2, Math.min(WORLD_H-2, thief.y));
+      if (thief.stopped) {
+        thief.stopTimer -= dt * 1000;
+        if (thief.stopTimer <= 0) thief.stopped = false;
+      } else {
+        let nx = thief.x + thief.vx * NPC_SPEED * 60 * dt;
+        let ny = thief.y + thief.vy * NPC_SPEED * 60 * dt;
+        if (isOccupied(Math.floor(nx), Math.floor(ny))) {
+          thief.vx = (Math.random() - 0.5) * 0.8;
+          thief.vy = (Math.random() - 0.5) * 0.8;
+        } else {
+          thief.x = nx;
+          thief.y = ny;
+        }
+        thief.x = Math.max(2, Math.min(WORLD_W-2, thief.x));
+        thief.y = Math.max(2, Math.min(WORLD_H-2, thief.y));
+      }
+      thief.pulse = (Math.sin(now * 0.005) + 1) / 2;
     }
-
-    thief.pulse = (Math.sin(now * 0.005) + 1) / 2;
-  });
+  }
 
   trySteal(now);
 
@@ -1024,14 +1396,22 @@ function update(now) {
     interactUI.classList.remove('visible');
   }
 
+  // Floating text update – stack vertically, slow movement
   for (let i = floatTexts.length - 1; i >= 0; i--) {
     const ft = floatTexts[i];
+    
     ft.y += ft.vy;
     ft.life -= dt * 1000;
-    ft.alpha = ft.life / FLOAT_TEXT_LIFETIME;
-    if (ft.life <= 0) floatTexts.splice(i, 1);
-  }
-}
+    
+    // Fade only in the last 40% of lifetime
+    ft.alpha = ft.life < (FLOAT_TEXT_LIFETIME * 0.4) 
+      ? (ft.life / (FLOAT_TEXT_LIFETIME * 0.4)) 
+      : 1;
+    
+    if (ft.life <= 0) {
+      floatTexts.splice(i, 1);
+    }
+  }}
 
 // ─── Render ─────────────────────────────────────
 function render() {
@@ -1100,6 +1480,30 @@ function render() {
     }
   }
 
+  // ─── TACKLE HIGHLIGHTS ────────────────────────────────────────────
+  if (tackleMode) {
+    tackleTargets.forEach(target => {
+      if (target.entity.x < left || target.entity.x > right || target.entity.y < top || target.entity.y > bot) return;
+      
+      const nx = Math.round((target.entity.x - camX) * TILE + W/2);
+      const ny = Math.round((target.entity.y - camY) * TILE + H/2);
+      
+      ctx.save();
+      ctx.translate(nx, ny);
+      if (target.type === 'thief') {
+        ctx.shadowColor = '#ff4444';
+      } else {
+        ctx.shadowColor = '#ffaa00';
+      }
+      ctx.shadowBlur = 25;
+      ctx.beginPath();
+      ctx.arc(0, 0, TILE * 0.45, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
   // ─── NPC SPRITE RENDERING ────────────────────────────────────────
   if (npcSpriteSheet) {
     npcs.forEach(npc => {
@@ -1140,23 +1544,52 @@ function render() {
     });
   }
 
-  thieves.forEach(thief => {
+  thieves.forEach((thief, thiefIndex) => {
     if (thief.x < left || thief.x > right || thief.y < top || thief.y > bot) return;
+    
     const nx = Math.round((thief.x - camX) * TILE + W/2);
     const ny = Math.round((thief.y - camY) * TILE + H/2);
-    const pulseAlpha = 0.6 + thief.pulse * 0.4;
-    ctx.fillStyle = `rgba(255,0,0,${pulseAlpha})`;
+    
+    // FADE if caught, PULSE if normal
+    const alpha = thief.caught ? Math.max(0, thief.fadeTime / 5000) : (0.6 + thief.pulse * 0.4);
+    
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = `rgba(255,0,0,${alpha})`;
     ctx.beginPath();
     ctx.arc(nx, ny, TILE * 0.32, 0, Math.PI*2);
     ctx.fill();
+    ctx.restore();
   });
 
-  const px = Math.round((player.x - camX)*TILE + W/2);
-  const py = Math.round((player.y - camY)*TILE + H/2);
-  ctx.fillStyle = '#27ae60';
-  ctx.beginPath();
-  ctx.arc(px, py, TILE*0.38, 0, Math.PI*2);
-  ctx.fill();
+  const px = Math.round((player.x - camX) * TILE + W/2);
+  const py = Math.round((player.y - camY) * TILE + H/2);
+
+  if (playerSprite && playerSprite.complete) {
+    // Use exactly the same scaling as NPCs
+    const scale = Math.min((TILE * 0.85) / playerSprite.width, (TILE * 1.1) / playerSprite.height);
+    const drawW = playerSprite.width * scale;
+    const drawH = playerSprite.height * scale;
+
+    // Center it (same logic as NPCs)
+    const drawX = px - drawW / 2;
+    const drawY = py - drawH / 2 - 5;   // same -5 offset as NPCs
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      playerSprite,
+      drawX,
+      drawY,
+      drawW,
+      drawH
+    );
+  } else {
+    // Fallback circle (optional)
+    ctx.fillStyle = '#27ae60';
+    ctx.beginPath();
+    ctx.arc(px, py, TILE * 0.38, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   player.inventory.forEach((it, i) => {
     const data = ITEMS[it.type];
@@ -1167,14 +1600,30 @@ function render() {
     ctx.fillText(data.emoji, ix, iy);
   });
 
-  floatTexts.forEach(ft => {
-    const fx = Math.round((ft.x - camX)*TILE + W/2 + TILE*0.4);
-    const fy = Math.round((ft.y - camY)*TILE + H/2 - TILE*0.3);
-    ctx.font = '48px Arial';
+  // Floating text – stacked vertically, no overlap
+  floatTexts.forEach((ft, index) => {
+    const fx = Math.round((ft.x - camX) * TILE + W/2 + TILE*0.4);
+    const baseY = Math.round((ft.y - camY) * TILE + H/2 - TILE*0.3);
+    
+    // Stack upward – newer messages higher
+    const offsetY = index * -60;   // 60px spacing between lines
+    
+    const fy = baseY + offsetY;
+    
+    ctx.font = '38px "Press Start 2P", "VT323", monospace';   // pixel font
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Black outline for readability
+    ctx.fillStyle = '#000';
+    ctx.lineWidth = 6;
+    ctx.strokeText(ft.text, fx, fy);
+    
+    // Main color
     ctx.fillStyle = ft.color;
     ctx.globalAlpha = ft.alpha;
     ctx.fillText(ft.text, fx, fy);
+    
     ctx.globalAlpha = 1;
   });
 
@@ -1201,7 +1650,11 @@ resize();
 
 // ─── Game Initialization ──────────────────────────────────────────
 async function initGame() {
-  await loadSpriteSheet();
+  await Promise.all([
+    loadSpriteSheet(),     // NPCs
+    loadPlayerSprite()     // Player
+  ]);
+
   loadGame();
   if (localStorage.getItem('marketHustle')) {
     console.log(`Continued game — Day ${currentDay}, Money $${player.money}`);

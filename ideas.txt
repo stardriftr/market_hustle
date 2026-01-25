@@ -3,6 +3,8 @@
 -ability to kill pick pocketers. cant id them so it risks loosing the loot on u (incl money not stored) if u kill npc
 -mutliplayer, invade other players worlds to pretend to b npc. then take loot of theres. escape by going to market exit
 -random events. eg drought, fishing bad, civil war, cold, heatwave, carts robbed
+-shit like sandstorms
+-add like dogs that take meat off you.
 
 ### **Overall Goal: Become the Ultimate Market Tycoon!**
 **Reach $1,000,000 all-time earnings** (escalate to $10M, $100M via milestones). Track **High Score** (best earnings) + **Tycoon Level** (unlocks at thresholds: e.g., Level 1 at $1k, Level 10 at $1M). Display in UI:  
