@@ -700,8 +700,8 @@ function generateWorld() {
     const stock = 3 + Math.floor(Math.random() * 18);
     stalls.push({
       x, y, type: item,
-      buyOffset: Math.floor(Math.random() * 5) - 2,
-      sellOffset: Math.floor(Math.random() * 5) - 2,
+      buyOffset: Math.floor(Math.random() * 9) - 4,   // ↑ -4 to +4 (was -2 to +2)
+      sellOffset: Math.floor(Math.random() * 9) - 4,  // ↑ -4 to +4
       stock, maxStock: stock
     });
   }
@@ -780,7 +780,7 @@ function generateWorld() {
 function getStallBuyPrice(stall) {
   const data = ITEMS[stall.type];
   let base = data.baseBuy + stall.buyOffset;
-  const ageMod = Math.max(0.4, 1 - (currentDay-1)/data.spoil * 0.7);
+  const ageMod = Math.max(0.55, 1 - (currentDay-1)/data.spoil * 0.35);  // ↑0.55 floor, *0.35
   return Math.max(1, Math.floor(base * ageMod));
 }
 
@@ -789,8 +789,8 @@ function getStallSellPrice(stall) {
   let base = data.baseSell + stall.sellOffset;
   const ageMod = Math.max(0.45, 1 - (currentDay-1)/data.spoil * 0.65);
   const buy = getStallBuyPrice(stall);
-  let sell = Math.floor(base * ageMod * 0.68 * achievements.bonuses.profitMultiplier);
-  sell = Math.max(1, Math.min(sell, buy - 1));
+  let sell = Math.floor(base * ageMod * 0.85 * achievements.bonuses.profitMultiplier);  // ↑0.85 (from 0.68)
+  sell = Math.max(1, Math.min(sell, buy * 1.4));  // ↑buy * 1.4 (allows ~40% profit cap)
   return sell;
 }
 
