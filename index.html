@@ -777,15 +777,10 @@ function generateWorld() {
 }
 
 // ─── Price logic ─────────────────────────────────
-function getStallSellPrice(stall) {
+function getStallBuyPrice(stall) {
   const data = ITEMS[stall.type];
-  let base = data.baseSell + stall.sellOffset;
-  // const ageMod = Math.max(0.45, 1 - (currentDay-1)/data.spoil * 0.65);  // ← COMMENTED OUT
-  const buy = getStallBuyPrice(stall);
-  // let sell = Math.floor(base * ageMod * 0.68 * achievements.bonuses.profitMultiplier);
-  let sell = Math.floor(base * achievements.bonuses.profitMultiplier);  // ← FULL PRICE
-  sell = Math.max(1, Math.min(sell, buy * 1.4));  // Keep profit cap
-  return sell;
+  let base = data.baseBuy + stall.buyOffset;
+  return Math.max(1, base);  // no ageMod → always full price
 }
 
 function getStallSellPrice(stall) {
