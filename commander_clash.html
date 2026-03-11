@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🏜️ Commander Clash</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  touch-action: none;
+  user-select: none;
+}
+
+canvas {
+  display: block;
+}
+
+/* Header Bar */
+#header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  z-index: 100;
+  border-bottom: 2px solid #444;
+}
+
+.header-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.header-label {
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-value {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#playerScore { color: #4fc3f7; }
+#enemyScore { color: #ff5252; }
+#timerDisplay { color: #ffd54f; }
+
+/* Selection Banner */
+#selectionBanner {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  display: none;
+  z-index: 99;
+  white-space: nowrap;
+  border: 2px solid #666;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Mobile UI - positioned at bottom */
+#ui {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 15px 10px 25px 10px;
+  gap: 10px;
+  z-index: 100;
+  border-top: 2px solid #444;
+}
+
+button {
+  padding: 18px 14px;
+  margin: 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: calc(25% - 10px);
+  flex: 1;
+  max-width: 120px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  border: 2px solid transparent;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button.active {
+  background: linear-gradient(145deg, #0b5, #094);
+  box-shadow: 0 0 20px #0f0, inset 0 0 10px rgba(255,255,255,0.2);
+  border-color: #0f0;
+}
+
+button.disabled {
+  opacity: 0.3;
+  background: #222;
+  pointer-events: none;
+}
+
+button .emoji {
+  font-size: 20px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+button .cost {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* End Screen */
+#endScreen {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  color: white;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 200;
+  padding: 20px;
+}
+
+#endScreen h1 {
+  font-size: 48px;
+  margin: 10px 0;
+  text-shadow: 0 0 20px currentColor;
+}
+
+#matchStats {
+  font-size: 24px;
+  margin: 20px 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+#playAgainBtn {
+  padding: 18px 40px;
+  font-size: 22px;
+  background: linear-gradient(145deg, #4CAF50, #388E3C);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  margin-top: 30px;
+  font-weight: bold;
+  box-shadow: 0 6px 20px rgba(76,175,80,0.4);
+}
+</style>
+<base target="_blank">
+</head>
+
+<body>
+
+<div id="header">
+  <div class="header-section">
+    <span class="header-label">🏴 YOU</span>
+    <span class="header-value" id="playerScore">0%</span>
+  </div>
+  <div class="header-section">
+    <span class="header-label">⏱️ TIME</span>
+    <span class="header-value" id="timerDisplay">⏱️ 120</span>
+  </div>
+  <div class="header-section">
+    <span class="header-label">💰 POINTS</span>
+    <span class="header-value" id="pointsDisplay">💰 10</span>
+  </div>
+  <div class="header-section">
+    <span class="header-label">🏴 ENEMY</span>
+    <span class="header-value" id="enemyScore">0%</span>
+  </div>
+</div>
+
+<div id="selectionBanner"></div>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+  <button data-class="soldier">
+    <span class="emoji">👤</span>
+    <span class="cost">💰1</span>
+  </button>
+  <button data-class="sniper">
+    <span class="emoji">🎯</span>
+    <span class="cost">💰3</span>
+  </button>
+  <button data-class="squad">
+    <span class="emoji">👥</span>
+    <span class="cost">💰4</span>
+  </button>
+  <button data-class="tank">
+    <span class="emoji">🚜</span>
+    <span class="cost">💰8</span>
+  </button>
+  <button data-class="mortar">
+    <span class="emoji">💣</span>
+    <span class="cost">💰10</span>
+  </button>
+  <button data-class="airstrike">
+    <span class="emoji">✈️</span>
+    <span class="cost">💰12</span>
+  </button>
+  <button data-class="spy">
+    <span class="emoji">🛩️</span>
+    <span class="cost">💰3</span>
+  </button>
+</div>
+
+<div id="endScreen">
+  <h1 id="winnerText">🏆 MATCH ENDED</h1>
+  <div id="matchStats"></div>
+  <button id="playAgainBtn" onclick="location.reload()">🔄 PLAY AGAIN</button>
+</div>
+
+<script>
+
+const canvas = document.getElementById("game")
+const ctx = canvas.getContext("2d")
+
+// Mobile-friendly canvas sizing
+function resizeCanvas() {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+}
+resizeCanvas()
+window.addEventListener('resize', resizeCanvas)
+
+const W = () => canvas.width
+const H = () => canvas.height
+
+let timer = 120
+let points = 10
+let gameOver = false
+
+const MAP_W = 20
+const MAP_H = 40
+
+function getTileSize() {
+  return Math.floor((H() - 140) / MAP_H) // Account for header and UI
+}
+
+function getMapOffsetX() {
+  return (W() - MAP_W * getTileSize()) / 2
+}
+
+let lastTime = performance.now()
+
+// Map: 0 = neutral, 1 = player, -1 = enemy
+let map = []
+let fog = []
+
+function initMap() {
+  map = []
+  fog = []
+  for(let y=0; y<MAP_H; y++){
+    let r = [], f = []
+    for(let x=0; x<MAP_W; x++){
+      r.push(0)
+      f.push(false)
+    }
+    map.push(r)
+    fog.push(f)
+  }
+
+  // Starting territories - semicircle shape
+  const centerX = MAP_W / 2
+  const playerRadius = 5
+
+  // Player territory at bottom (blue)
+  for(let y = MAP_H - 10; y < MAP_H; y++){
+    for(let x = 0; x < MAP_W; x++){
+      let dx = x - centerX
+      let dy = y - (MAP_H - 1 - playerRadius / 2)
+      let dist = Math.sqrt(dx*dx + dy*dy)
+      if(dist <= playerRadius + 1 || y >= MAP_H - 4){
+        map[y][x] = 1
+        fog[y][x] = true
+      }
+    }
+  }
+
+  // Enemy territory at top (red)
+  for(let y = 0; y < 10; y++){
+    for(let x = 0; x < MAP_W; x++){
+      let dx = x - centerX
+      let dy = y - (playerRadius / 2)
+      let dist = Math.sqrt(dx*dx + dy*dy)
+      if(dist <= playerRadius + 1 || y <= 3){
+        map[y][x] = -1
+        fog[y][x] = true
+      }
+    }
+  }
+}
+
+initMap()
+
+// Buildings (shelter)
+let buildings = []
+function initBuildings() {
+  buildings = []
+  for(let i=0; i<15; i++){
+    let bx = Math.floor(Math.random() * (MAP_W - 2)) + 1
+    let by = Math.floor(Math.random() * (MAP_H - 10)) + 5
+    buildings.push({x: bx, y: by})
+  }
+}
+initBuildings()
+
+// Classes with emojis
+const classes = {
+  squad:    {cost:4,  count:5, hp:10, range:120, damage:4, emoji: "👥"},
+  sniper:   {cost:3,  count:3, hp:7,  range:200, damage:6, emoji: "🎯"},
+  tank:     {cost:8,  count:1, hp:50, range:120, damage:9, emoji: "🚜"},
+  soldier:  {cost:1,  count:1, hp:8,  range:100, damage:3, emoji: "👤"},
+  mortar:   {cost:10, count:1, hp:15, range:180, damage:10, emoji: "💣"},
+  airstrike:{cost:12, count:0, hp:0,  range:0,   damage:0, emoji: "✈️"},
+  spy:      {cost:3,  count:1, hp:5,  range:0,   damage:0, emoji: "🛩️"}
+}
+
+let bullets = []
+let explosions = []
+
+class Bullet {
+  constructor(x,y,tx,ty,color="yellow"){
+    this.x=x; this.y=y; this.tx=tx; this.ty=ty; this.life=12; this.color=color
+  }
+  update(){
+    this.x += (this.tx - this.x) * 0.32
+    this.y += (this.ty - this.y) * 0.32
+    this.life--
+  }
+  draw(){
+    ctx.strokeStyle = this.color
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.moveTo(this.x, this.y)
+    ctx.lineTo(this.tx, this.ty)
+    ctx.stroke()
+  }
+}
+
+class Explosion {
+  constructor(x,y){
+    this.x=x; this.y=y; this.life=30; this.max=30
+  }
+  update(){this.life--}
+  draw(){
+    let r = (this.max - this.life) * 4
+    ctx.fillStyle = `rgba(255,100,0,${this.life/this.max})`
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, r, 0, Math.PI*2)
+    ctx.fill()
+    // Emoji explosion
+    if(this.life > 20) {
+      ctx.font = "30px Arial"
+      ctx.textAlign = "center"
+      ctx.fillText("💥", this.x, this.y)
+    }
+  }
+}
+
+let spyPlane = null
+
+class SpyPlane {
+  constructor(){
+    this.x = W()/2
+    this.y = H() - 100
+    this.phase = 0
+    this.timer = 600 // 30 seconds at 60fps
+    this.state = "flying_up" // flying_up, circling
+    this.circleCenter = {x: W()/2, y: H() * 0.2}
+  }
+
+  update(){
+    this.timer--
+    if(this.timer <= 0){ 
+      spyPlane = null
+      return 
+    }
+
+    this.phase += 0.03
+
+    if(this.state === "flying_up") {
+      // Fly to enemy side
+      this.y -= 3
+      this.x += Math.sin(this.phase * 2) * 2
+
+      if(this.y <= H() * 0.25) {
+        this.state = "circling"
+        this.circleCenter = {x: W()/2, y: H() * 0.15}
+      }
+    } else {
+      // Circle around enemy territory
+      this.x = this.circleCenter.x + Math.cos(this.phase) * 120
+      this.y = this.circleCenter.y + Math.sin(this.phase * 0.8) * 40
+    }
+
+    // Reveal fog around spy plane
+    let tileSize = getTileSize()
+    let mapOffsetX = getMapOffsetX()
+    let tx = Math.floor((this.x - mapOffsetX) / tileSize)
+    let ty = Math.floor(this.y / tileSize)
+
+    for(let dy = -3; dy <= 3; dy++){
+      for(let dx = -3; dx <= 3; dx++){
+        let nx = tx + dx, ny = ty + dy
+        if(nx >= 0 && nx < MAP_W && ny >= 0 && ny < MAP_H){
+          fog[ny][nx] = true
+        }
+      }
+    }
+  }
+
+  draw(){
+    ctx.font = "40px Arial"
+    ctx.textAlign = "center"
+    ctx.fillText("🛩️", this.x, this.y)
+
+    // Fuel indicator
+    ctx.fillStyle = "rgba(255,255,255,0.8)"
+    ctx.font = "14px Arial"
+    ctx.fillText("⛽ " + Math.ceil(this.timer/20) + "s", this.x, this.y - 30)
+  }
+}
+
+class Soldier {
+  constructor(x,y,team,cls){
+    this.x=x; this.y=y; this.team=team; this.cls=cls
+    this.hp=cls.hp; this.range=cls.range; this.damage=cls.damage
+    this.cool=0; this.kills=0
+    this.inShelter = false
+  }
+
+  update(){ 
+    this.cool = Math.max(0, this.cool - 1)
+
+    // Check if in shelter
+    let tileSize = getTileSize()
+    let mapOffsetX = getMapOffsetX()
+    let tx = Math.floor((this.x - mapOffsetX) / tileSize)
+    let ty = Math.floor(this.y / tileSize)
+
+    this.inShelter = false
+    for(let b of buildings){
+      if(b.x === tx && b.y === ty){
+        this.inShelter = true
+        break
+      }
+    }
+  }
+
+  draw(){
+    ctx.font = "20px Arial"
+    ctx.textAlign = "center"
+    let emoji = this.inShelter ? "🏠" + this.cls.emoji : this.cls.emoji
+    ctx.fillText(emoji, this.x, this.y)
+
+    // Health bar
+    let barWidth = 20
+    let hpPercent = this.hp / this.cls.hp
+    ctx.fillStyle = "red"
+    ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth, 4)
+    ctx.fillStyle = hpPercent > 0.5 ? "#0f0" : hpPercent > 0.25 ? "yellow" : "red"
+    ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth * hpPercent, 4)
+  }
+}
+
+class Squad {
+  constructor(x,y,team,cls){
+    this.team=team; this.cls=cls; this.poi={x,y}
+    this.members=[]; this.kills=0; this.dead=0
+    for(let i=0; i<cls.count; i++){
+      let sx = x + (Math.random()-0.5) * 40
+      let sy = y + (Math.random()-0.5) * 40
+      let s = new Soldier(sx, sy, team, cls)
+      this.members.push(s)
+      soldiers.push(s)
+    }
+  }
+
+  center(){
+    if(!this.members.length) return this.poi
+    let sx=0,sy=0
+    for(let m of this.members){sx+=m.x;sy+=m.y}
+    return {x:sx/this.members.length, y:sy/this.members.length}
+  }
+
+  captureTerritory(){
+    let tileSize = getTileSize()
+    let mapOffsetX = getMapOffsetX()
+
+    for(let s of this.members){
+      let tx = Math.floor((s.x - mapOffsetX) / tileSize)
+      let ty = Math.floor(s.y / tileSize)
+
+      if(tx >= 0 && tx < MAP_W && ty >= 0 && ty < MAP_H){
+        // Capture territory if neutral or enemy
+        if(map[ty][tx] !== (this.team=="player"?1:-1)){
+          map[ty][tx] = this.team=="player"?1:-1
+        }
+        fog[ty][tx] = true
+      }
+    }
+  }
+
+  update(){
+    let c = this.center()
+    let fighting = false
+
+    for(let s of this.members){
+      s.update()
+
+      for(let e of soldiers){
+        if(e.team !== this.team && e.hp > 0){
+          let d = Math.hypot(e.x - s.x, e.y - s.y)
+          if(d < s.range){
+            fighting = true
+            if(s.cool <= 0){
+              // Higher survival chance in shelter
+              let hitChance = e.inShelter ? 0.4 : 0.7
+
+              if(Math.random() < hitChance){
+                let dmg = s.damage * (e.inShelter ? 0.5 : 1)
+                e.hp -= dmg
+                if(e.hp <= 0){ this.kills++; s.kills++ }
+              }
+              bullets.push(new Bullet(s.x, s.y, e.x, e.y))
+              s.cool = 20
+            }
+          }
+        }
+      }
+    }
+
+    this.members = this.members.filter(m => m.hp > 0)
+    this.dead = this.cls.count - this.members.length
+
+    if(!this.members.length){
+      squads = squads.filter(sq => sq !== this)
+      return
+    }
+
+    // Capture territory
+    this.captureTerritory()
+
+    // Movement
+    if(!fighting){
+      let dx = this.poi.x - c.x
+      let dy = this.poi.y - c.y
+      let d = Math.hypot(dx, dy)
+      if(d > 15){
+        dx /= d; dy /= d
+        let speed = 1.2
+        for(let s of this.members){
+          s.x += dx * speed + (Math.random()-0.5)*0.5
+          s.y += dy * speed + (Math.random()-0.5)*0.5
+        }
+      }
+    }
+  }
+
+  draw(){
+    for(let s of this.members) s.draw()
+  }
+}
+
+class Mortar extends Squad {
+  constructor(x,y,team,cls){
+    super(x,y,team,cls)
+    this.cool = 0
+  }
+
+  update(){
+    super.update()
+    let c = this.center()
+
+    for(let e of soldiers){
+      if(e.team !== this.team && e.hp > 0){
+        let d = Math.hypot(e.x - c.x, e.y - c.y)
+        if(d < this.cls.range && this.cool <= 0){
+          let dmg = this.cls.damage * (e.inShelter ? 0.5 : 1)
+          e.hp -= dmg
+          bullets.push(new Bullet(c.x, c.y - 20, e.x, e.y, "orange"))
+          this.cool = 45
+          if(e.hp <= 0) this.kills++
+        }
+      }
+    }
+    this.cool = Math.max(0, this.cool - 1)
+  }
+}
+
+let squads = []
+let soldiers = []
+let selected = null
+let placing = null
+let activeButton = null
+const allButtons = document.querySelectorAll("#ui button")
+let dragStart = null
+
+function getPos(e){
+  let r = canvas.getBoundingClientRect()
+  let clientX = e.touches ? e.touches[0].clientX : e.clientX
+  let clientY = e.touches ? e.touches[0].clientY : e.clientY
+  return {x: clientX - r.left, y: clientY - r.top}
+}
+
+canvas.addEventListener("pointerdown", e => {
+  e.preventDefault()
+  let p = getPos(e)
+
+  // Select squad
+  for(let s of squads){
+    if(s.team === "player"){
+      let c = s.center()
+      if(Math.hypot(c.x - p.x, c.y - p.y) < 40){
+        selected = s
+        placing = null
+        if(activeButton) activeButton.classList.remove("active")
+        activeButton = null
+        updateBanner()
+        return
+      }
+    }
+  }
+
+  // Place or command
+  if(placing){
+    let tileSize = getTileSize()
+    let mapOffsetX = getMapOffsetX()
+    let tx = Math.floor((p.x - mapOffsetX) / tileSize)
+    let ty = Math.floor(p.y / tileSize)
+
+    if(ty < 0 || ty >= MAP_H || tx < 0 || tx >= MAP_W) return
+
+    let cls = classes[placing]
+    if(points < cls.cost) return
+
+    if(placing === "airstrike"){
+      dragStart = p
+      return
+    }
+
+    if(placing === "spy"){
+      points -= cls.cost
+      spyPlane = new SpyPlane()
+      placing = null
+      if(activeButton) activeButton.classList.remove("active")
+      activeButton = null
+      return
+    }
+
+    // Can only place on own territory or neutral
+    if(map[ty][tx] === -1) return
+
+    points -= cls.cost
+    let unit = (placing === "mortar") ? new Mortar(p.x, p.y, "player", cls) : new Squad(p.x, p.y, "player", cls)
+    squads.push(unit)
+    selected = unit
+    placing = null
+    if(activeButton) activeButton.classList.remove("active")
+    activeButton = null
+    updateBanner()
+  } else if(selected){
+    selected.poi = {x: p.x, y: p.y}
+  }
+})
+
+canvas.addEventListener("pointerup", e => {
+  if(dragStart && placing === "airstrike"){
+    let end = getPos(e)
+    let dist = Math.hypot(end.x - dragStart.x, end.y - dragStart.y)
+    if(dist > 40 && points >= classes.airstrike.cost){
+      points -= classes.airstrike.cost
+      performAirstrike(dragStart, end)
+    }
+    dragStart = null
+    placing = null
+    if(activeButton) activeButton.classList.remove("active")
+    activeButton = null
+  }
+})
+
+function performAirstrike(start, end){
+  let dx = end.x - start.x
+  let dy = end.y - start.y
+  let len = Math.hypot(dx, dy)
+  let steps = Math.min(8, Math.floor(len / 60) + 1)
+
+  for(let i=0; i<=steps; i++){
+    let t = i / steps
+    let px = start.x + dx * t
+    let py = start.y + dy * t
+
+    for(let s of soldiers){
+      if(s.team !== "player" && s.hp > 0){
+        let d = pointLineDistance(s.x, s.y, start.x, start.y, end.x, end.y)
+        if(d < 80){
+          let dmg = (20 + Math.random()*10) * (s.inShelter ? 0.5 : 1)
+          s.hp -= dmg
+        }
+      }
+    }
+
+    for(let k=0; k<4; k++){
+      let rx = px + (Math.random()-0.5)*100
+      let ry = py + (Math.random()-0.5)*60
+      bullets.push(new Bullet(rx - 200, ry - 300, rx, ry, "orange"))
+    }
+    explosions.push(new Explosion(px, py))
+  }
+}
+
+function pointLineDistance(px,py,x1,y1,x2,y2){
+  let A=px-x1, B=py-y1, C=x2-x1, D=y2-y1
+  let dot = A*C + B*D
+  let len_sq = C*C + D*D || 1
+  let param = Math.max(0, Math.min(1, dot / len_sq))
+  let xx = x1 + param * C
+  let yy = y1 + param * D
+  return Math.hypot(px-xx, py-yy)
+}
+
+function updateBanner(){
+  let ban = document.getElementById("selectionBanner")
+  if(selected && selected.team === "player"){
+    let type = selected instanceof Mortar ? "💣 Mortar" : (selected.cls.count > 1 ? "👥 Squad" : "👤 Unit")
+    ban.innerHTML = `${type} | ❤️ ${selected.members.length} | 💀 ${selected.kills} | ⚰️ ${selected.dead}`
+    ban.style.display = "block"
+  } else {
+    ban.style.display = "none"
+  }
+}
+
+allButtons.forEach(b=>{
+  b.onclick = ()=>{
+    if(activeButton) activeButton.classList.remove("active")
+    placing = b.dataset.class
+    selected = null
+    activeButton = b
+    b.classList.add("active")
+    updateBanner()
+  }
+})
+
+function calculateTerritory(){
+  let p=0, a=0
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      if(map[y][x]==1) p++
+      if(map[y][x]==-1) a++
+    }
+  }
+  let total = MAP_W * MAP_H
+  return [Math.floor(p/total*100), Math.floor(a/total*100)]
+}
+
+// Find connected territory regions for outlining
+function getTerritoryRegions(){
+  let playerTiles = []
+  let enemyTiles = []
+
+  for(let y=0; y<MAP_H; y++){
+    for(let x=0; x<MAP_W; x++){
+      if(map[y][x] === 1) playerTiles.push({x,y})
+      if(map[y][x] === -1) enemyTiles.push({x,y})
+    }
+  }
+
+  return {player: playerTiles, enemy: enemyTiles}
+}
+
+// AI Logic
+let aiTimer = 0
+let aiSpawnTimer = 0
+
+function ai(){
+  aiTimer++
+  aiSpawnTimer++
+
+  // AI spawns units periodically
+  if(aiSpawnTimer > 90){
+    aiSpawnTimer = 0
+    if(points >= 3){
+      let types = ["soldier", "sniper", "squad"]
+      let type = types[Math.floor(Math.random() * types.length)]
+      let cls = classes[type]
+
+      if(points >= cls.cost){
+        points -= cls.cost
+        let tileSize = getTileSize()
+        let mapOffsetX = getMapOffsetX()
+        let x = mapOffsetX + Math.random() * (MAP_W * tileSize)
+        let y = Math.random() * (H() * 0.2)
+
+        let unit = (type === "mortar") ? new Mortar(x, y, "ai", cls) : new Squad(x, y, "ai", cls)
+        // Target player base or random player unit
+        unit.poi = {x: W()/2 + (Math.random()-0.5)*150, y: H() - 80}
+        squads.push(unit)
+      }
+    }
+  }
+
+  // AI moves units toward player territory
+  if(aiTimer > 30){
+    aiTimer = 0
+
+    for(let s of squads){
+      if(s.team === "ai"){
+        let c = s.center()
+
+        // Find nearest player unit or base
+        let nearest = null
+        let nearestDist = Infinity
+
+        for(let e of squads){
+          if(e.team === "player"){
+            let ec = e.center()
+            let d = Math.hypot(ec.x - c.x, ec.y - c.y)
+            if(d < nearestDist){
+              nearestDist = d
+              nearest = ec
+            }
+          }
+        }
+
+        // Also look for player territory to capture
+        let tileSize = getTileSize()
+        let mapOffsetX = getMapOffsetX()
+        let tx = Math.floor((c.x - mapOffsetX) / tileSize)
+        let ty = Math.floor(c.y / tileSize)
+
+        if(nearest && nearestDist < 400){
+          s.poi = nearest
+        } else {
+          // Move toward player base
+          s.poi = {x: W()/2 + (Math.random()-0.5)*100, y: H() - 100}
+        }
+      }
+    }
+  }
+}
+
+// Drawing functions
+function drawDesertBackground(){
+  // Desert gradient
+  let grad = ctx.createLinearGradient(0, 0, 0, H())
+  grad.addColorStop(0, "#d4a574")
+  grad.addColorStop(0.5, "#c4956a")
+  grad.addColorStop(1, "#b8860b")
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, W(), H())
+
+  // Sand dunes texture
+  ctx.fillStyle = "rgba(139, 90, 43, 0.1)"
+  for(let i=0; i<20; i++){
+    let x = (i * 137) % W()
+    let y = (i * 89) % H()
+    ctx.beginPath()
+    ctx.arc(x, y, 30 + (i%3)*20, 0, Math.PI*2)
+    ctx.fill()
+  }
+}
+
+function drawTiles(){
+  let tileSize = getTileSize()
+  let mapOffsetX = getMapOffsetX()
+
+  for(let y=0; y<MAP_H; y++){
+    for(let x=0; x<MAP_W; x++){
+      let px = mapOffsetX + x * tileSize
+      let py = 60 + y * tileSize // Offset for header
+
+      if(!fog[y][x]){
+        ctx.fillStyle = "rgba(0,0,0,0.6)"
+        ctx.fillRect(px, py, tileSize, tileSize)
+        continue
+      }
+
+      if(map[y][x] === 1){
+        ctx.fillStyle = "rgba(79, 195, 247, 0.5)" // Blue for player
+      } else if(map[y][x] === -1){
+        ctx.fillStyle = "rgba(255, 82, 82, 0.5)" // Red for enemy
+      } else {
+        ctx.fillStyle = "rgba(210, 180, 140, 0.3)" // Neutral desert
+      }
+
+      ctx.fillRect(px, py, tileSize, tileSize)
+
+      // Grid lines
+      ctx.strokeStyle = "rgba(0,0,0,0.15)"
+      ctx.lineWidth = 1
+      ctx.strokeRect(px, py, tileSize, tileSize)
+    }
+  }
+}
+
+function drawTerritoryOutlines(){
+  let tileSize = getTileSize()
+  let mapOffsetX = getMapOffsetX()
+
+  // Draw outlines around connected territories
+  ctx.lineWidth = 4
+
+  // Player outline (blue)
+  ctx.strokeStyle = "#4fc3f7"
+  ctx.beginPath()
+  for(let y=0; y<MAP_H; y++){
+    for(let x=0; x<MAP_W; x++){
+      if(map[y][x] === 1 && fog[y][x]){
+        let px = mapOffsetX + x * tileSize
+        let py = 60 + y * tileSize
+
+        // Check edges
+        if(y===0 || map[y-1][x] !== 1) {
+          ctx.moveTo(px, py)
+          ctx.lineTo(px + tileSize, py)
+        }
+        if(y===MAP_H-1 || map[y+1][x] !== 1) {
+          ctx.moveTo(px, py + tileSize)
+          ctx.lineTo(px + tileSize, py + tileSize)
+        }
+        if(x===0 || map[y][x-1] !== 1) {
+          ctx.moveTo(px, py)
+          ctx.lineTo(px, py + tileSize)
+        }
+        if(x===MAP_W-1 || map[y][x+1] !== 1) {
+          ctx.moveTo(px + tileSize, py)
+          ctx.lineTo(px + tileSize, py + tileSize)
+        }
+      }
+    }
+  }
+  ctx.stroke()
+
+  // Enemy outline (red)
+  ctx.strokeStyle = "#ff5252"
+  ctx.beginPath()
+  for(let y=0; y<MAP_H; y++){
+    for(let x=0; x<MAP_W; x++){
+      if(map[y][x] === -1 && fog[y][x]){
+        let px = mapOffsetX + x * tileSize
+        let py = 60 + y * tileSize
+
+        if(y===0 || map[y-1][x] !== -1) {
+          ctx.moveTo(px, py)
+          ctx.lineTo(px + tileSize, py)
+        }
+        if(y===MAP_H-1 || map[y+1][x] !== -1) {
+          ctx.moveTo(px, py + tileSize)
+          ctx.lineTo(px + tileSize, py + tileSize)
+        }
+        if(x===0 || map[y][x-1] !== -1) {
+          ctx.moveTo(px, py)
+          ctx.lineTo(px, py + tileSize)
+        }
+        if(x===MAP_W-1 || map[y][x+1] !== -1) {
+          ctx.moveTo(px + tileSize, py)
+          ctx.lineTo(px + tileSize, py + tileSize)
+        }
+      }
+    }
+  }
+  ctx.stroke()
+}
+
+function drawBuildings(){
+  let tileSize = getTileSize()
+  let mapOffsetX = getMapOffsetX()
+
+  for(let b of buildings){
+    let px = mapOffsetX + b.x * tileSize + 4
+    let py = 60 + b.y * tileSize + 4
+
+    ctx.font = (tileSize - 8) + "px Arial"
+    ctx.textAlign = "center"
+    ctx.fillText("🏠", px + tileSize/2 - 4, py + tileSize/2 + 4)
+  }
+}
+
+function drawFogZones(){
+  // Draw the 25% fog zones
+  let zoneHeight = (H() - 140) * 0.25
+
+  // Enemy fog zone (top 25%)
+  ctx.fillStyle = "rgba(0,0,0,0.2)"
+  ctx.fillRect(0, 60, W(), zoneHeight)
+
+  // Player fog zone (bottom 25%)
+  ctx.fillRect(0, H() - zoneHeight - 80, W(), zoneHeight)
+
+  // Labels
+  ctx.fillStyle = "rgba(255,255,255,0.5)"
+  ctx.font = "16px Arial"
+  ctx.textAlign = "center"
+  ctx.fillText("🌫️ ENEMY FOG ZONE", W()/2, 60 + zoneHeight/2)
+  ctx.fillText("🌫️ PLAYER FOG ZONE", W()/2, H() - zoneHeight/2 - 40)
+}
+
+function isVisible(unit){
+  let zoneHeight = (H() - 140) * 0.25
+
+  if(unit.team === "player") return true
+  if(spyPlane) return true
+
+  // Enemy units hidden in top 25% (their territory)
+  if(unit.y < 60 + zoneHeight) return false
+
+  // Enemy units visible in middle 50%
+  return true
+}
+
+function draw(){
+  drawDesertBackground()
+  drawTiles()
+  drawTerritoryOutlines()
+  drawBuildings()
+  drawFogZones()
+
+  // Draw units
+  for(let s of squads){
+    if(isVisible(s)){
+      s.draw()
+    }
+  }
+
+  // Draw bullets
+  bullets.forEach(b=>b.draw())
+  explosions.forEach(e=>e.draw())
+
+  // Spy plane always visible
+  if(spyPlane) spyPlane.draw()
+
+  // Selection indicator
+  if(selected){
+    let c = selected.center()
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = 3
+    ctx.setLineDash([8,8])
+    ctx.beginPath()
+    ctx.arc(c.x, c.y, 35, 0, Math.PI*2)
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    // Movement line
+    if(selected.poi){
+      ctx.strokeStyle = "rgba(255,255,255,0.6)"
+      ctx.lineWidth = 2
+      ctx.setLineDash([10,10])
+      ctx.beginPath()
+      ctx.moveTo(c.x, c.y)
+      ctx.lineTo(selected.poi.x, selected.poi.y)
+      ctx.stroke()
+      ctx.setLineDash([])
+
+      // Target marker
+      ctx.font = "24px Arial"
+      ctx.fillText("📍", selected.poi.x, selected.poi.y)
+    }
+  }
+
+  // Airstrike drag line
+  if(dragStart && placing === "airstrike"){
+    ctx.strokeStyle = "red"
+    ctx.lineWidth = 4
+    ctx.setLineDash([12,8])
+    ctx.beginPath()
+    ctx.moveTo(dragStart.x, dragStart.y)
+    ctx.lineTo(getPos({clientX:W()/2,clientY:H()/2}).x, getPos({clientY:H()/2}).y)
+    ctx.stroke()
+    ctx.setLineDash([])
+  }
+}
+
+function update(){
+  const now = performance.now()
+  const delta = (now - lastTime) / 1000
+  lastTime = now
+
+  if(timer > 0 && !gameOver){
+    ai()
+
+    // Update squads
+    for(let s of [...squads]){
+      s.update()
+    }
+
+    // Update bullets
+    for(let b of bullets){
+      b.update()
+    }
+    bullets = bullets.filter(b => b.life > 0)
+
+    // Update explosions
+    for(let e of explosions){
+      e.update()
+    }
+    explosions = explosions.filter(e => e.life > 0)
+
+    // Update spy plane
+    if(spyPlane){
+      spyPlane.update()
+    }
+
+    // Cleanup
+    soldiers = soldiers.filter(s => s.hp > 0)
+
+    points += 0.03 * delta * 60
+    timer -= delta
+  }
+
+  timer = Math.max(0, timer)
+
+  if(timer <= 0 && !gameOver){
+    timer = 0
+    gameOver = true
+    let t = calculateTerritory()
+    let winner = t[0]>t[1] ? "🏆 YOU WIN!" : t[0]<t[1] ? "💀 AI WINS!" : "🤝 DRAW"
+    document.getElementById("winnerText").innerHTML = winner
+    document.getElementById("matchStats").innerHTML = `
+      <div style="font-size: 32px; margin: 10px 0;">
+        🏴 You: ${t[0]}% | 🏴 Enemy: ${t[1]}%
+      </div>
+      <div style="font-size: 20px; color: #aaa;">
+        💰 Final Points: ${Math.floor(points)}
+      </div>
+    `
+    document.getElementById("endScreen").style.display = "flex"
+  }
+
+  // Update UI
+  let t = calculateTerritory()
+  document.getElementById("timerDisplay").innerText = "⏱️ " + Math.floor(timer)
+  document.getElementById("pointsDisplay").innerText = "💰 " + Math.floor(points)
+  document.getElementById("playerScore").innerText = "🏴 " + t[0] + "%"
+  document.getElementById("enemyScore").innerText = "🏴 " + t[1] + "%"
+
+  // Update button states
+  allButtons.forEach(b => {
+    let cls = classes[b.dataset.class]
+    if(points < cls.cost){
+      b.classList.add("disabled")
+    } else {
+      b.classList.remove("disabled")
+    }
+  })
+}
+
+function loop(){
+  update()
+  draw()
+  requestAnimationFrame(loop)
+}
+
+loop()
+
+</script>
+</body>
+</html>
