@@ -3,1195 +3,999 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🏜️ Commander Clash</title>
-
+<title>⚔️ Commander Clash</title>
 <style>
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  margin: 0;
-  overflow: hidden;
-  background: #1a1a2e;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  touch-action: none;
-  user-select: none;
-}
-
-canvas {
-  display: block;
-}
-
-/* Header Bar */
-#header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 15px;
-  z-index: 100;
-  border-bottom: 2px solid #444;
-}
-
-.header-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 80px;
-}
-
-.header-label {
-  font-size: 11px;
-  opacity: 0.8;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.header-value {
-  font-size: 22px;
-  font-weight: bold;
-}
-
-#playerScore { color: #4fc3f7; }
-#enemyScore { color: #ff5252; }
-#timerDisplay { color: #ffd54f; }
-
-/* Selection Banner */
-#selectionBanner {
-  position: absolute;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  display: none;
-  z-index: 99;
-  white-space: nowrap;
-  border: 2px solid #666;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
-/* Mobile UI - positioned at bottom */
-#ui {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 15px 10px 25px 10px;
-  gap: 10px;
-  z-index: 100;
-  border-top: 2px solid #444;
-}
-
-button {
-  padding: 18px 14px;
-  margin: 0;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  min-width: calc(25% - 10px);
-  flex: 1;
-  max-width: 120px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-  border: 2px solid transparent;
-}
-
-button:active {
-  transform: scale(0.95);
-}
-
-button.active {
-  background: linear-gradient(145deg, #0b5, #094);
-  box-shadow: 0 0 20px #0f0, inset 0 0 10px rgba(255,255,255,0.2);
-  border-color: #0f0;
-}
-
-button.disabled {
-  opacity: 0.3;
-  background: #222;
-  pointer-events: none;
-}
-
-button .emoji {
-  font-size: 20px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-button .cost {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* End Screen */
-#endScreen {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.95);
-  color: white;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 200;
-  padding: 20px;
-}
-
-#endScreen h1 {
-  font-size: 48px;
-  margin: 10px 0;
-  text-shadow: 0 0 20px currentColor;
-}
-
-#matchStats {
-  font-size: 24px;
-  margin: 20px 0;
-  text-align: center;
-  line-height: 1.6;
-}
-
-#playAgainBtn {
-  padding: 18px 40px;
-  font-size: 22px;
-  background: linear-gradient(145deg, #4CAF50, #388E3C);
-  color: white;
-  border: none;
-  border-radius: 15px;
-  margin-top: 30px;
-  font-weight: bold;
-  box-shadow: 0 6px 20px rgba(76,175,80,0.4);
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;overflow:hidden;background:#0a0a0f;font-family:'Segoe UI',system-ui,sans-serif;touch-action:none;user-select:none;}
+canvas{display:block;}
+#header{position:absolute;top:0;left:0;right:0;height:56px;background:linear-gradient(180deg,#070710 0%,rgba(7,7,16,0.94)100%);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 10px;z-index:100;border-bottom:2px solid #1e2d4a;box-shadow:0 2px 20px rgba(0,0,0,0.9);}
+.hdr{display:flex;flex-direction:column;align-items:center;min-width:68px;}
+.hlabel{font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:1.5px;}
+.hval{font-size:21px;font-weight:900;line-height:1;}
+#pScore{color:#4fc3f7;}#eScore{color:#ff5252;}#tDisp{color:#ffd54f;}#gDisp{color:#81c784;}
+.hcenter{display:flex;gap:14px;align-items:center;}
+#ui{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,#060810 0%,rgba(6,8,14,0.97)100%);padding:8px 6px 12px;z-index:100;border-top:2px solid #1e2d4a;}
+#cardRow{display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:5px;}
+.tc{width:68px;height:86px;border-radius:10px;border:2px solid #252535;background:linear-gradient(155deg,#151828,#0c0f1e);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;transition:transform .12s,border-color .12s,box-shadow .12s;flex-shrink:0;touch-action:manipulation;}
+.tc:active{transform:scale(.92);}
+.tc.active{border-color:#4fc3f7;box-shadow:0 0 16px #4fc3f780;background:linear-gradient(155deg,#0d2540,#091830);}
+.tc.cant{opacity:.3;pointer-events:none;}
+.tc .ce{font-size:24px;line-height:1.1;}
+.tc .cn{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;opacity:.8;}
+.tc .cc{font-size:11px;color:#ffd54f;font-weight:900;}
+.tc .cd{font-size:7px;opacity:.45;text-align:center;padding:0 3px;}
+#offhand{width:56px;height:74px;border-radius:8px;border:2px dashed #2a3050;background:rgba(255,255,255,.03);color:#888;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;font-size:9px;text-align:center;flex-shrink:0;position:relative;transition:border-color .15s,background .15s;}
+#offhand.has{border-color:#7c4dff;background:rgba(124,77,255,.1);}
+#offhand .oe{font-size:20px;}
+#offhand .ol{font-size:7px;position:absolute;top:3px;opacity:.4;}
+#uibot{display:flex;gap:8px;align-items:center;justify-content:center;}
+#deckinfo{font-size:11px;color:#666;}
+#banner{position:absolute;top:62px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:#fff;padding:7px 18px;border-radius:18px;font-size:12px;display:none;z-index:99;white-space:nowrap;border:1.5px solid #444;box-shadow:0 3px 12px rgba(0,0,0,.6);}
+#hprev{position:absolute;pointer-events:none;z-index:98;display:none;flex-direction:column;align-items:center;background:rgba(0,0,0,.88);border:2px solid #4fc3f7;border-radius:10px;padding:7px 12px;color:#fff;font-size:11px;gap:2px;}
+#hprev .hpe{font-size:26px;}
+#end{display:none;position:absolute;inset:0;background:rgba(0,0,0,.97);color:#fff;justify-content:center;align-items:center;flex-direction:column;z-index:200;padding:20px;}
+#end h1{font-size:42px;margin:8px 0;text-shadow:0 0 20px currentColor;}
+#endStats{font-size:18px;margin:12px 0;text-align:center;line-height:1.9;}
+#replayBtn{padding:15px 34px;font-size:18px;background:linear-gradient(145deg,#4CAF50,#2E7D32);color:#fff;border:none;border-radius:12px;margin-top:20px;font-weight:800;cursor:pointer;}
 </style>
-<base target="_blank">
 </head>
-
 <body>
-
 <div id="header">
-  <div class="header-section">
-    <span class="header-label">🏴 YOU</span>
-    <span class="header-value" id="playerScore">0%</span>
+  <div class="hdr"><span class="hlabel">🏴 YOU</span><span class="hval" id="pScore">0%</span></div>
+  <div class="hcenter">
+    <div class="hdr"><span class="hlabel">⏱ TIME</span><span class="hval" id="tDisp">180</span></div>
+    <div class="hdr"><span class="hlabel">💰 GOLD</span><span class="hval" id="gDisp">15</span></div>
   </div>
-  <div class="header-section">
-    <span class="header-label">⏱️ TIME</span>
-    <span class="header-value" id="timerDisplay">⏱️ 120</span>
-  </div>
-  <div class="header-section">
-    <span class="header-label">💰 POINTS</span>
-    <span class="header-value" id="pointsDisplay">💰 10</span>
-  </div>
-  <div class="header-section">
-    <span class="header-label">🏴 ENEMY</span>
-    <span class="header-value" id="enemyScore">0%</span>
-  </div>
+  <div class="hdr"><span class="hlabel">☠️ ENEMY</span><span class="hval" id="eScore">0%</span></div>
 </div>
-
-<div id="selectionBanner"></div>
-
+<div id="banner"></div>
+<div id="hprev"><div class="hpe" id="hpe"></div><div id="hpn" style="font-weight:800"></div><div id="hpi" style="font-size:9px;opacity:.65"></div></div>
 <canvas id="game"></canvas>
-
 <div id="ui">
-  <button data-class="soldier">
-    <span class="emoji">👤</span>
-    <span class="cost">💰1</span>
-  </button>
-  <button data-class="sniper">
-    <span class="emoji">🎯</span>
-    <span class="cost">💰3</span>
-  </button>
-  <button data-class="squad">
-    <span class="emoji">👥</span>
-    <span class="cost">💰4</span>
-  </button>
-  <button data-class="tank">
-    <span class="emoji">🚜</span>
-    <span class="cost">💰8</span>
-  </button>
-  <button data-class="mortar">
-    <span class="emoji">💣</span>
-    <span class="cost">💰10</span>
-  </button>
-  <button data-class="airstrike">
-    <span class="emoji">✈️</span>
-    <span class="cost">💰12</span>
-  </button>
-  <button data-class="spy">
-    <span class="emoji">🛩️</span>
-    <span class="cost">💰3</span>
-  </button>
+  <div id="cardRow">
+    <div id="offhand"><span class="ol">HOLD</span><div class="oe" id="oe">🤚</div><div id="on" style="font-size:7px;opacity:.6"></div></div>
+    <div class="tc" id="c0"></div>
+    <div class="tc" id="c1"></div>
+    <div class="tc" id="c2"></div>
+  </div>
+  <div id="uibot"><span id="deckinfo">🃏 --</span><span style="font-size:10px;color:#444">|</span><span style="font-size:9px;color:#555">Hold card to preview • Right-click to store</span></div>
 </div>
-
-<div id="endScreen">
-  <h1 id="winnerText">🏆 MATCH ENDED</h1>
-  <div id="matchStats"></div>
-  <button id="playAgainBtn" onclick="location.reload()">🔄 PLAY AGAIN</button>
+<div id="end">
+  <h1 id="endTitle">⚔️</h1>
+  <div id="endStats"></div>
+  <button id="replayBtn" onclick="location.reload()">🔄 PLAY AGAIN</button>
 </div>
-
 <script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CANVAS & LAYOUT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const HEADER_H=56;
+const MAP_W=20, MAP_H=36;
+let UI_H=108;
 
-const canvas = document.getElementById("game")
-const ctx = canvas.getContext("2d")
-
-// Mobile-friendly canvas sizing
-function resizeCanvas() {
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
+function W(){return canvas.width;}
+function H(){return canvas.height;}
+function resize(){
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  UI_H=document.getElementById("ui").offsetHeight||108;
 }
-resizeCanvas()
-window.addEventListener('resize', resizeCanvas)
+resize();
+window.addEventListener("resize",resize);
 
-const W = () => canvas.width
-const H = () => canvas.height
+function TS(){return Math.floor((H()-HEADER_H-UI_H)/MAP_H);}
+function OX(){return Math.floor((W()-MAP_W*TS())/2);}
+function OT(){return HEADER_H;}
 
-let timer = 120
-let points = 10
-let gameOver = false
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TERRAIN
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const T_PLAINS=0,T_MOUNTAIN=1,T_RIVER=2,T_FOREST=3,T_DESERT=4;
+let terrain=[], mapOwn=[], fog=[];
+let buildings=[], mines=[];
 
-const MAP_W = 20
-const MAP_H = 40
+const TDATA={
+  [T_PLAINS]:  {color:"#6a7d55",icon:"",    speedMult:1.0, defBonus:0.0, atkBonus:1.0},
+  [T_MOUNTAIN]:{color:"#7a7060",icon:"⛰",   speedMult:0.45,defBonus:0.55,atkBonus:1.4},
+  [T_RIVER]:   {color:"#2e5f9a",icon:"🌊",   speedMult:0.5, defBonus:-0.2,atkBonus:0.9},
+  [T_FOREST]:  {color:"#2c5225",icon:"🌲",   speedMult:0.75,defBonus:0.35,atkBonus:1.0},
+  [T_DESERT]:  {color:"#b89a5a",icon:"",    speedMult:0.85,defBonus:0.0, atkBonus:1.0},
+};
 
-function getTileSize() {
-  return Math.floor((H() - 140) / MAP_H) // Account for header and UI
-}
-
-function getMapOffsetX() {
-  return (W() - MAP_W * getTileSize()) / 2
-}
-
-let lastTime = performance.now()
-
-// Map: 0 = neutral, 1 = player, -1 = enemy
-let map = []
-let fog = []
-
-function initMap() {
-  map = []
-  fog = []
-  for(let y=0; y<MAP_H; y++){
-    let r = [], f = []
-    for(let x=0; x<MAP_W; x++){
-      r.push(0)
-      f.push(false)
-    }
-    map.push(r)
-    fog.push(f)
+function initTerrain(){
+  terrain=[];mapOwn=[];fog=[];
+  for(let y=0;y<MAP_H;y++){
+    let tr=[],mo=[],fg=[];
+    for(let x=0;x<MAP_W;x++){tr.push(T_PLAINS);mo.push(0);fg.push(false);}
+    terrain.push(tr);mapOwn.push(mo);fog.push(fg);
   }
-
-  // Starting territories - semicircle shape
-  const centerX = MAP_W / 2
-  const playerRadius = 5
-
-  // Player territory at bottom (blue)
-  for(let y = MAP_H - 10; y < MAP_H; y++){
-    for(let x = 0; x < MAP_W; x++){
-      let dx = x - centerX
-      let dy = y - (MAP_H - 1 - playerRadius / 2)
-      let dist = Math.sqrt(dx*dx + dy*dy)
-      if(dist <= playerRadius + 1 || y >= MAP_H - 4){
-        map[y][x] = 1
-        fog[y][x] = true
-      }
-    }
+  // Mountains
+  const mGroups=[{cx:4,cy:10,r:3},{cx:6,cy:13,r:2},{cx:15,cy:8,r:2},{cx:3,cy:20,r:2},{cx:16,cy:22,r:3},{cx:14,cy:25,r:2}];
+  for(let m of mGroups){
+    for(let dy=-m.r;dy<=m.r;dy++)for(let dx=-m.r;dx<=m.r;dx++)
+      if(Math.hypot(dx,dy)<=m.r){let nx=m.cx+dx,ny=m.cy+dy;if(inM(nx,ny))terrain[ny][nx]=T_MOUNTAIN;}
   }
-
-  // Enemy territory at top (red)
-  for(let y = 0; y < 10; y++){
-    for(let x = 0; x < MAP_W; x++){
-      let dx = x - centerX
-      let dy = y - (playerRadius / 2)
-      let dist = Math.sqrt(dx*dx + dy*dy)
-      if(dist <= playerRadius + 1 || y <= 3){
-        map[y][x] = -1
-        fog[y][x] = true
-      }
-    }
+  // River 1 (left)
+  let rx=7,ry=1;
+  for(let i=0;i<20;i++){if(inM(rx,ry))terrain[ry][rx]=T_RIVER;ry++;rx+=Math.sin(i*0.9)>0.3?1:Math.sin(i*0.9)<-0.3?-1:0;rx=clamp(rx,1,MAP_W-2);}
+  // River 2 (right)
+  rx=12;ry=14;
+  for(let i=0;i<18;i++){if(inM(rx,ry))terrain[ry][rx]=T_RIVER;ry++;rx+=Math.cos(i*1.1)>0.3?1:Math.cos(i*1.1)<-0.3?-1:0;rx=clamp(rx,1,MAP_W-2);}
+  // Forests
+  const fGroups=[{cx:12,cy:7,r:2},{cx:3,cy:26,r:2},{cx:17,cy:29,r:2},{cx:10,cy:18,r:2}];
+  for(let f of fGroups){
+    for(let dy=-f.r;dy<=f.r;dy++)for(let dx=-f.r;dx<=f.r;dx++)
+      if(Math.hypot(dx,dy)<=f.r){let nx=f.cx+dx,ny=f.cy+dy;if(inM(nx,ny)&&terrain[ny][nx]===T_PLAINS)terrain[ny][nx]=T_FOREST;}
   }
+  // Desert strip
+  for(let x=0;x<MAP_W;x++){let y=Math.floor(MAP_H/2);if(terrain[y][x]===T_PLAINS)terrain[y][x]=T_DESERT;if(terrain[y-1]&&terrain[y-1][x]===T_PLAINS)terrain[y-1][x]=T_DESERT;}
+  // Starting territories
+  for(let y=MAP_H-8;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){mapOwn[y][x]=1;fog[y][x]=true;}
+  for(let y=0;y<8;y++)for(let x=0;x<MAP_W;x++){mapOwn[y][x]=-1;fog[y][x]=true;}
 }
 
-initMap()
+function inM(x,y){return x>=0&&x<MAP_W&&y>=0&&y<MAP_H;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function worldToTile(wx,wy){return{tx:Math.floor((wx-OX())/TS()),ty:Math.floor((wy-OT())/TS())};}
+function tileToWorld(tx,ty){return{wx:OX()+tx*TS()+TS()/2,wy:OT()+ty*TS()+TS()/2};}
 
-// Buildings (shelter)
-let buildings = []
-function initBuildings() {
-  buildings = []
-  for(let i=0; i<15; i++){
-    let bx = Math.floor(Math.random() * (MAP_W - 2)) + 1
-    let by = Math.floor(Math.random() * (MAP_H - 10)) + 5
-    buildings.push({x: bx, y: by})
-  }
-}
-initBuildings()
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BUILDING TYPES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const BTYPES={
+  barracks:   {emoji:"🏯",hp:80, name:"Barracks",  effect:"Shelter + gold boost"},
+  watchtower: {emoji:"🗼",hp:50, name:"Watchtower", effect:"Reveals 5-tile fog"},
+  fortress:   {emoji:"🏰",hp:150,name:"Fortress",   effect:"Heavy shelter -55% dmg"},
+  armory:     {emoji:"⚙️", hp:60, name:"Armory",     effect:"+25% attack nearby"},
+  goldmine:   {emoji:"⛏️", hp:40, name:"Gold Mine",  effect:"+2 gold/sec if manned"},
+};
 
-// Classes with emojis
-const classes = {
-  squad:    {cost:4,  count:5, hp:10, range:120, damage:4, emoji: "👥"},
-  sniper:   {cost:3,  count:3, hp:7,  range:200, damage:6, emoji: "🎯"},
-  tank:     {cost:8,  count:1, hp:50, range:120, damage:9, emoji: "🚜"},
-  soldier:  {cost:1,  count:1, hp:8,  range:100, damage:3, emoji: "👤"},
-  mortar:   {cost:10, count:1, hp:15, range:180, damage:10, emoji: "💣"},
-  airstrike:{cost:12, count:0, hp:0,  range:0,   damage:0, emoji: "✈️"},
-  spy:      {cost:3,  count:1, hp:5,  range:0,   damage:0, emoji: "🛩️"}
-}
-
-let bullets = []
-let explosions = []
-
-class Bullet {
-  constructor(x,y,tx,ty,color="yellow"){
-    this.x=x; this.y=y; this.tx=tx; this.ty=ty; this.life=12; this.color=color
-  }
-  update(){
-    this.x += (this.tx - this.x) * 0.32
-    this.y += (this.ty - this.y) * 0.32
-    this.life--
-  }
-  draw(){
-    ctx.strokeStyle = this.color
-    ctx.lineWidth = 3
-    ctx.beginPath()
-    ctx.moveTo(this.x, this.y)
-    ctx.lineTo(this.tx, this.ty)
-    ctx.stroke()
+function initBuildings(){
+  buildings=[];
+  const bkeys=Object.keys(BTYPES);
+  let tries=0;
+  while(buildings.length<13&&tries<300){
+    tries++;
+    let bx=1+Math.floor(Math.random()*(MAP_W-2));
+    let by=4+Math.floor(Math.random()*(MAP_H-10));
+    if(terrain[by][bx]===T_RIVER||terrain[by][bx]===T_MOUNTAIN) continue;
+    if(buildings.some(b=>b.x===bx&&b.y===by)) continue;
+    let t=bkeys[Math.floor(Math.random()*bkeys.length)];
+    let bt=BTYPES[t];
+    buildings.push({x:bx,y:by,type:t,hp:bt.hp,maxHp:bt.hp,team:0});
   }
 }
 
-class Explosion {
-  constructor(x,y){
-    this.x=x; this.y=y; this.life=30; this.max=30
-  }
-  update(){this.life--}
-  draw(){
-    let r = (this.max - this.life) * 4
-    ctx.fillStyle = `rgba(255,100,0,${this.life/this.max})`
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, r, 0, Math.PI*2)
-    ctx.fill()
-    // Emoji explosion
-    if(this.life > 20) {
-      ctx.font = "30px Arial"
-      ctx.textAlign = "center"
-      ctx.fillText("💥", this.x, this.y)
-    }
-  }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TROOP DEFINITIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const TROOPS=[
+  {id:"soldier",   name:"Soldier",    emoji:"🪖",cost:1, count:1,hp:12, range:110,damage:4, speed:0.65,desc:"Basic infantry"},
+  {id:"squad",     name:"Squad",      emoji:"👥",cost:4, count:5,hp:8,  range:110,damage:3, speed:0.55,desc:"5-man fire squad"},
+  {id:"sniper",    name:"Sniper",     emoji:"🎯",cost:3, count:1,hp:7,  range:250,damage:12,speed:0.45,desc:"Long-range precision"},
+  {id:"tank",      name:"Tank",       emoji:"🚛",cost:9, count:1,hp:90, range:130,damage:16,speed:0.30,desc:"Heavy armored unit"},
+  {id:"mortar",    name:"Mortar",     emoji:"💣",cost:8, count:1,hp:14, range:200,damage:18,speed:0.20,desc:"Area bombardment"},
+  {id:"cavalry",   name:"Cavalry",    emoji:"🏇",cost:5, count:2,hp:18, range:90, damage:9, speed:1.15,desc:"Fast flanking unit"},
+  {id:"medic",     name:"Medic",      emoji:"💉",cost:4, count:1,hp:10, range:80, damage:0, speed:0.55,desc:"Heals nearby allies"},
+  {id:"engineer",  name:"Engineer",   emoji:"🔧",cost:3, count:1,hp:8,  range:80, damage:2, speed:0.50,desc:"Repairs buildings"},
+  {id:"rocket",    name:"Rocket",     emoji:"🚀",cost:7, count:1,hp:14, range:220,damage:22,speed:0.35,desc:"Explosive anti-tank"},
+  {id:"shield",    name:"Shield Wall",emoji:"🛡️",cost:5, count:3,hp:38, range:70, damage:3, speed:0.30,desc:"Tanky defensive line"},
+  {id:"berserker", name:"Berserker",  emoji:"🪓",cost:6, count:2,hp:24, range:65, damage:20,speed:0.95,desc:"Melee fury"},
+  {id:"artillery", name:"Artillery",  emoji:"🔫",cost:10,count:1,hp:20, range:270,damage:24,speed:0.15,desc:"Max-range cannon"},
+  {id:"paratrooper",name:"Para",      emoji:"🪂",cost:6, count:3,hp:12, range:110,damage:5, speed:0.60,desc:"Drop anywhere"},
+  {id:"spy",       name:"Scout Plane",emoji:"🛩️",cost:3, count:0,hp:0,  range:0,  damage:0, speed:0,  desc:"Reveals enemy fog"},
+  {id:"airstrike", name:"Airstrike",  emoji:"✈️",cost:12,count:0,hp:0,  range:0,  damage:0, speed:0,  desc:"Drag to bomb a line"},
+  {id:"mine",      name:"Land Mine",  emoji:"⚠️",cost:2, count:0,hp:0,  range:0,  damage:0, speed:0,  desc:"Place near your troops"},
+];
+const TMAP={};for(let t of TROOPS)TMAP[t.id]=t;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DECK / HAND
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let deck=[],hand=[],offhandCard=null,deckIdx=0;
+
+function buildDeck(){
+  let pool=TROOPS.filter(t=>!["spy","airstrike","mine"].includes(t.id));
+  deck=[];
+  for(let t of pool){let n=t.cost<=3?3:t.cost<=6?2:1;for(let i=0;i<n;i++)deck.push({...t});}
+  deck.push({...TMAP.spy},{...TMAP.airstrike},{...TMAP.mine},{...TMAP.airstrike});
+  shuffleDeck();
+  hand=[];offhandCard=null;deckIdx=0;
+  for(let i=0;i<3;i++)drawCard();
+  renderHand();
+}
+function shuffleDeck(){
+  for(let i=deck.length-1;i>0;i--){let j=0|Math.random()*(i+1);[deck[i],deck[j]]=[deck[j],deck[i]];}
+}
+function drawCard(){
+  if(hand.length>=3)return;
+  if(deckIdx>=deck.length){shuffleDeck();deckIdx=0;}
+  hand.push({...deck[deckIdx++]});
+}
+function consumeCard(i){
+  if(i===-99){let c=offhandCard;offhandCard=null;renderHand();return c;}
+  let c=hand[i];hand.splice(i,1);drawCard();renderHand();return c;
+}
+function storeOffhand(i){
+  if(offhandCard)return false;
+  offhandCard=hand[i];hand.splice(i,1);drawCard();renderHand();return true;
 }
 
-let spyPlane = null
-
-class SpyPlane {
-  constructor(){
-    this.x = W()/2
-    this.y = H() - 100
-    this.phase = 0
-    this.timer = 600 // 30 seconds at 60fps
-    this.state = "flying_up" // flying_up, circling
-    this.circleCenter = {x: W()/2, y: H() * 0.2}
+function renderHand(){
+  for(let i=0;i<3;i++){
+    let el=document.getElementById("c"+i);
+    let card=hand[i];
+    if(!card){el.innerHTML="";el.className="tc";el.style.opacity="0.15";el.style.pointerEvents="none";continue;}
+    el.style.pointerEvents="";
+    let isActive=placing&&placingIdx===i;
+    let tooExpensive=gold<card.cost;
+    el.className="tc"+(isActive?" active":"");
+    el.style.opacity=tooExpensive?"0.35":"1";
+    // Don't block pointer-events when too expensive — just show muted, let click show error
+    el.innerHTML=`<div class="ce">${card.emoji}</div><div class="cn">${card.name}</div><div class="cc">💰${card.cost}</div><div class="cd">${card.desc}</div>`;
   }
-
-  update(){
-    this.timer--
-    if(this.timer <= 0){ 
-      spyPlane = null
-      return 
-    }
-
-    this.phase += 0.03
-
-    if(this.state === "flying_up") {
-      // Fly to enemy side
-      this.y -= 3
-      this.x += Math.sin(this.phase * 2) * 2
-
-      if(this.y <= H() * 0.25) {
-        this.state = "circling"
-        this.circleCenter = {x: W()/2, y: H() * 0.15}
-      }
-    } else {
-      // Circle around enemy territory
-      this.x = this.circleCenter.x + Math.cos(this.phase) * 120
-      this.y = this.circleCenter.y + Math.sin(this.phase * 0.8) * 40
-    }
-
-    // Reveal fog around spy plane
-    let tileSize = getTileSize()
-    let mapOffsetX = getMapOffsetX()
-    let tx = Math.floor((this.x - mapOffsetX) / tileSize)
-    let ty = Math.floor(this.y / tileSize)
-
-    for(let dy = -3; dy <= 3; dy++){
-      for(let dx = -3; dx <= 3; dx++){
-        let nx = tx + dx, ny = ty + dy
-        if(nx >= 0 && nx < MAP_W && ny >= 0 && ny < MAP_H){
-          fog[ny][nx] = true
-        }
-      }
-    }
-  }
-
-  draw(){
-    ctx.font = "40px Arial"
-    ctx.textAlign = "center"
-    ctx.fillText("🛩️", this.x, this.y)
-
-    // Fuel indicator
-    ctx.fillStyle = "rgba(255,255,255,0.8)"
-    ctx.font = "14px Arial"
-    ctx.fillText("⛽ " + Math.ceil(this.timer/20) + "s", this.x, this.y - 30)
-  }
+  let oh=document.getElementById("offhand");
+  let oe=document.getElementById("oe");
+  let on2=document.getElementById("on");
+  if(offhandCard){oh.classList.add("has");oe.textContent=offhandCard.emoji;on2.textContent=offhandCard.name;}
+  else{oh.classList.remove("has");oe.textContent="🤚";on2.textContent="";}
+  let rem=deck.length-deckIdx;
+  document.getElementById("deckinfo").textContent="🃏 "+rem+" left";
 }
 
-class Soldier {
-  constructor(x,y,team,cls){
-    this.x=x; this.y=y; this.team=team; this.cls=cls
-    this.hp=cls.hp; this.range=cls.range; this.damage=cls.damage
-    this.cool=0; this.kills=0
-    this.inShelter = false
-  }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INPUT / PLACEMENT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let placing=null,placingIdx=-1;
+let selected=null,dragStart=null,lastPointer=null;
 
-  update(){ 
-    this.cool = Math.max(0, this.cool - 1)
+for(let i=0;i<3;i++){
+  (()=>{
+    let idx=i;
+    let el=document.getElementById("c"+i);
+    let holdT=null, didHold=false;
 
-    // Check if in shelter
-    let tileSize = getTileSize()
-    let mapOffsetX = getMapOffsetX()
-    let tx = Math.floor((this.x - mapOffsetX) / tileSize)
-    let ty = Math.floor(this.y / tileSize)
-
-    this.inShelter = false
-    for(let b of buildings){
-      if(b.x === tx && b.y === ty){
-        this.inShelter = true
-        break
-      }
-    }
-  }
-
-  draw(){
-    ctx.font = "20px Arial"
-    ctx.textAlign = "center"
-    let emoji = this.inShelter ? "🏠" + this.cls.emoji : this.cls.emoji
-    ctx.fillText(emoji, this.x, this.y)
-
-    // Health bar
-    let barWidth = 20
-    let hpPercent = this.hp / this.cls.hp
-    ctx.fillStyle = "red"
-    ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth, 4)
-    ctx.fillStyle = hpPercent > 0.5 ? "#0f0" : hpPercent > 0.25 ? "yellow" : "red"
-    ctx.fillRect(this.x - barWidth/2, this.y - 25, barWidth * hpPercent, 4)
-  }
+    el.addEventListener("pointerdown",e=>{
+      e.stopPropagation();
+      didHold=false;
+      holdT=setTimeout(()=>{didHold=true;let c=hand[idx];if(c)showPreview(c,e);},400);
+    });
+    el.addEventListener("pointerup",e=>{
+      e.stopPropagation();
+      clearTimeout(holdT);hidePreview();
+      if(didHold)return;
+      let card=hand[idx];if(!card)return;
+      if(placing&&placingIdx===idx){placing=null;placingIdx=-1;renderHand();updateBanner();return;}
+      if(gold<card.cost){flashBanner("❌ Need 💰"+card.cost+" — have "+Math.floor(gold),1500);return;}
+      placing=card;placingIdx=idx;selected=null;dragStart=null;
+      renderHand();updateBanner();
+    });
+    el.addEventListener("pointerleave",()=>{clearTimeout(holdT);hidePreview();});
+    el.addEventListener("contextmenu",e=>{
+      e.preventDefault();e.stopPropagation();
+      if(hand[idx]&&!offhandCard){let n=hand[idx].name;storeOffhand(idx);flashBanner("📦 Stored "+n+" in offhand",1800);}
+    });
+  })();
 }
-
-class Squad {
-  constructor(x,y,team,cls){
-    this.team=team; this.cls=cls; this.poi={x,y}
-    this.members=[]; this.kills=0; this.dead=0
-    for(let i=0; i<cls.count; i++){
-      let sx = x + (Math.random()-0.5) * 40
-      let sy = y + (Math.random()-0.5) * 40
-      let s = new Soldier(sx, sy, team, cls)
-      this.members.push(s)
-      soldiers.push(s)
-    }
+document.getElementById("offhand").addEventListener("pointerdown",e=>e.stopPropagation());
+document.getElementById("offhand").addEventListener("pointerup",e=>{
+  e.stopPropagation();
+  if(offhandCard){
+    if(gold<offhandCard.cost){flashBanner("❌ Not enough gold!",1500);return;}
+    placing=offhandCard;placingIdx=-99;offhandCard=null;renderHand();updateBanner();
   }
-
-  center(){
-    if(!this.members.length) return this.poi
-    let sx=0,sy=0
-    for(let m of this.members){sx+=m.x;sy+=m.y}
-    return {x:sx/this.members.length, y:sy/this.members.length}
-  }
-
-  captureTerritory(){
-    let tileSize = getTileSize()
-    let mapOffsetX = getMapOffsetX()
-
-    for(let s of this.members){
-      let tx = Math.floor((s.x - mapOffsetX) / tileSize)
-      let ty = Math.floor(s.y / tileSize)
-
-      if(tx >= 0 && tx < MAP_W && ty >= 0 && ty < MAP_H){
-        // Capture territory if neutral or enemy
-        if(map[ty][tx] !== (this.team=="player"?1:-1)){
-          map[ty][tx] = this.team=="player"?1:-1
-        }
-        fog[ty][tx] = true
-      }
-    }
-  }
-
-  update(){
-    let c = this.center()
-    let fighting = false
-
-    for(let s of this.members){
-      s.update()
-
-      for(let e of soldiers){
-        if(e.team !== this.team && e.hp > 0){
-          let d = Math.hypot(e.x - s.x, e.y - s.y)
-          if(d < s.range){
-            fighting = true
-            if(s.cool <= 0){
-              // Higher survival chance in shelter
-              let hitChance = e.inShelter ? 0.4 : 0.7
-
-              if(Math.random() < hitChance){
-                let dmg = s.damage * (e.inShelter ? 0.5 : 1)
-                e.hp -= dmg
-                if(e.hp <= 0){ this.kills++; s.kills++ }
-              }
-              bullets.push(new Bullet(s.x, s.y, e.x, e.y))
-              s.cool = 20
-            }
-          }
-        }
-      }
-    }
-
-    this.members = this.members.filter(m => m.hp > 0)
-    this.dead = this.cls.count - this.members.length
-
-    if(!this.members.length){
-      squads = squads.filter(sq => sq !== this)
-      return
-    }
-
-    // Capture territory
-    this.captureTerritory()
-
-    // Movement
-    if(!fighting){
-      let dx = this.poi.x - c.x
-      let dy = this.poi.y - c.y
-      let d = Math.hypot(dx, dy)
-      if(d > 15){
-        dx /= d; dy /= d
-        let speed = 1.2
-        for(let s of this.members){
-          s.x += dx * speed + (Math.random()-0.5)*0.5
-          s.y += dy * speed + (Math.random()-0.5)*0.5
-        }
-      }
-    }
-  }
-
-  draw(){
-    for(let s of this.members) s.draw()
-  }
-}
-
-class Mortar extends Squad {
-  constructor(x,y,team,cls){
-    super(x,y,team,cls)
-    this.cool = 0
-  }
-
-  update(){
-    super.update()
-    let c = this.center()
-
-    for(let e of soldiers){
-      if(e.team !== this.team && e.hp > 0){
-        let d = Math.hypot(e.x - c.x, e.y - c.y)
-        if(d < this.cls.range && this.cool <= 0){
-          let dmg = this.cls.damage * (e.inShelter ? 0.5 : 1)
-          e.hp -= dmg
-          bullets.push(new Bullet(c.x, c.y - 20, e.x, e.y, "orange"))
-          this.cool = 45
-          if(e.hp <= 0) this.kills++
-        }
-      }
-    }
-    this.cool = Math.max(0, this.cool - 1)
-  }
-}
-
-let squads = []
-let soldiers = []
-let selected = null
-let placing = null
-let activeButton = null
-const allButtons = document.querySelectorAll("#ui button")
-let dragStart = null
+});
 
 function getPos(e){
-  let r = canvas.getBoundingClientRect()
-  let clientX = e.touches ? e.touches[0].clientX : e.clientX
-  let clientY = e.touches ? e.touches[0].clientY : e.clientY
-  return {x: clientX - r.left, y: clientY - r.top}
+  let r=canvas.getBoundingClientRect();
+  let src=e.touches?e.touches[0]:e.changedTouches?e.changedTouches[0]:e;
+  return{x:src.clientX-r.left,y:src.clientY-r.top};
 }
 
-canvas.addEventListener("pointerdown", e => {
-  e.preventDefault()
-  let p = getPos(e)
-
-  // Select squad
-  for(let s of squads){
-    if(s.team === "player"){
-      let c = s.center()
-      if(Math.hypot(c.x - p.x, c.y - p.y) < 40){
-        selected = s
-        placing = null
-        if(activeButton) activeButton.classList.remove("active")
-        activeButton = null
-        updateBanner()
-        return
-      }
+canvas.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  let p=getPos(e);lastPointer=p;
+  if(placing&&placing.id==="airstrike"){dragStart=p;return;}
+  if(!placing){
+    // Select / move squad
+    for(let s of squads){
+      if(s.team!=="player")continue;
+      let c=s.center();
+      if(Math.hypot(c.x-p.x,c.y-p.y)<44){selected=s;updateBanner();return;}
     }
+    if(selected){selected.poi={x:p.x,y:p.y};updateBanner();}
+    else{selected=null;updateBanner();}
+    return;
   }
-
-  // Place or command
+});
+canvas.addEventListener("pointermove",e=>{
+  e.preventDefault();
+  lastPointer=getPos(e);
   if(placing){
-    let tileSize = getTileSize()
-    let mapOffsetX = getMapOffsetX()
-    let tx = Math.floor((p.x - mapOffsetX) / tileSize)
-    let ty = Math.floor(p.y / tileSize)
-
-    if(ty < 0 || ty >= MAP_H || tx < 0 || tx >= MAP_W) return
-
-    let cls = classes[placing]
-    if(points < cls.cost) return
-
-    if(placing === "airstrike"){
-      dragStart = p
-      return
-    }
-
-    if(placing === "spy"){
-      points -= cls.cost
-      spyPlane = new SpyPlane()
-      placing = null
-      if(activeButton) activeButton.classList.remove("active")
-      activeButton = null
-      return
-    }
-
-    // Can only place on own territory or neutral
-    if(map[ty][tx] === -1) return
-
-    points -= cls.cost
-    let unit = (placing === "mortar") ? new Mortar(p.x, p.y, "player", cls) : new Squad(p.x, p.y, "player", cls)
-    squads.push(unit)
-    selected = unit
-    placing = null
-    if(activeButton) activeButton.classList.remove("active")
-    activeButton = null
-    updateBanner()
-  } else if(selected){
-    selected.poi = {x: p.x, y: p.y}
+    showInlinePrev(lastPointer);
   }
-})
-
-canvas.addEventListener("pointerup", e => {
-  if(dragStart && placing === "airstrike"){
-    let end = getPos(e)
-    let dist = Math.hypot(end.x - dragStart.x, end.y - dragStart.y)
-    if(dist > 40 && points >= classes.airstrike.cost){
-      points -= classes.airstrike.cost
-      performAirstrike(dragStart, end)
+});
+canvas.addEventListener("pointerup",e=>{
+  e.preventDefault();
+  let p=getPos(e);
+  hideInlinePrev();
+  if(dragStart&&placing&&placing.id==="airstrike"){
+    if(Math.hypot(p.x-dragStart.x,p.y-dragStart.y)>30&&gold>=placing.cost){
+      gold-=placing.cost;consumeCard(placingIdx);doAirstrike(dragStart,p);
     }
-    dragStart = null
-    placing = null
-    if(activeButton) activeButton.classList.remove("active")
-    activeButton = null
+    dragStart=null;placing=null;placingIdx=-1;renderHand();updateBanner();return;
   }
-})
+  if(!placing)return;
+  let{tx,ty}=worldToTile(p.x,p.y);
+  if(!inM(tx,ty))return;
+  if(gold<placing.cost){flashBanner("❌ Not enough gold!",1500);return;}
+  // Mine: must be within 4 tiles of friendly troop
+  if(placing.id==="mine"){
+    let ok=soldiers.some(s=>{
+      if(s.team!=="player"||s.hp<=0)return false;
+      let{tx:stx,ty:sty}=worldToTile(s.x,s.y);
+      return Math.hypot(stx-tx,sty-ty)<=4;
+    });
+    if(!ok){flashBanner("⚠️ Place mines within 4 tiles of your troops!",2000);return;}
+    gold-=placing.cost;consumeCard(placingIdx);
+    mines.push({x:tx,y:ty,team:"player",triggered:false,triggerTimer:0});
+    placing=null;placingIdx=-1;renderHand();updateBanner();return;
+  }
+  if(placing.id==="spy"){
+    gold-=placing.cost;consumeCard(placingIdx);spyPlane=new SpyPlane();
+    placing=null;placingIdx=-1;renderHand();updateBanner();return;
+  }
+  // Paratroopers can land anywhere; others need own/neutral tile
+  if(placing.id!=="paratrooper"&&mapOwn[ty][tx]===-1){flashBanner("❌ Can't place on enemy territory!",1500);return;}
+  gold-=placing.cost;
+  let cls=consumeCard(placingIdx);
+  let sq=new Squad(p.x,p.y,"player",cls);
+  squads.push(sq);selected=sq;
+  placing=null;placingIdx=-1;renderHand();updateBanner();
+});
 
-function performAirstrike(start, end){
-  let dx = end.x - start.x
-  let dy = end.y - start.y
-  let len = Math.hypot(dx, dy)
-  let steps = Math.min(8, Math.floor(len / 60) + 1)
+// Hold preview on canvas
+let inlinePrevTimer=null;
+function showInlinePrev(p){
+  if(!placing)return;
+  clearTimeout(inlinePrevTimer);
+  inlinePrevTimer=setTimeout(()=>{
+    let el=document.getElementById("hprev");
+    document.getElementById("hpe").textContent=placing.emoji;
+    document.getElementById("hpn").textContent=placing.name+" 💰"+placing.cost;
+    document.getElementById("hpi").textContent=`HP:${placing.hp||"-"} DMG:${placing.damage||"-"} RNG:${placing.range||"-"}`;
+    el.style.display="flex";el.style.left=(p.x+14)+"px";el.style.top=(p.y-90)+"px";
+  },350);
+}
+function hideInlinePrev(){clearTimeout(inlinePrevTimer);document.getElementById("hprev").style.display="none";}
+function showPreview(card,e){
+  let el=document.getElementById("hprev");
+  document.getElementById("hpe").textContent=card.emoji;
+  document.getElementById("hpn").textContent=card.name+" 💰"+card.cost;
+  document.getElementById("hpi").textContent=`HP:${card.hp||"-"} DMG:${card.damage||"-"} RNG:${card.range||"-"}`;
+  el.style.display="flex";el.style.left="50%";el.style.top="30%";el.style.transform="translate(-50%,-50%)";
+}
+function hidePreview(){document.getElementById("hprev").style.display="none";}
 
-  for(let i=0; i<=steps; i++){
-    let t = i / steps
-    let px = start.x + dx * t
-    let py = start.y + dy * t
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BANNER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let banT=null;
+function updateBanner(){
+  let el=document.getElementById("banner");
+  if(placing){el.innerHTML=`🎯 Placing <b>${placing.emoji} ${placing.name}</b> — Tap map${placing.id==="airstrike"?" (drag for line":""} • Right-click card to store`;el.style.display="block";}
+  else if(selected&&selected.team==="player"&&selected.members.length){
+    el.innerHTML=`${selected.cls.emoji} ${selected.cls.name} ❤️${selected.members.length}/${selected.cls.count} 💀${selected.kills} — Tap map to move`;el.style.display="block";
+  }else{el.style.display="none";}
+}
+function flashBanner(msg,dur){
+  let el=document.getElementById("banner");
+  el.innerHTML=msg;el.style.display="block";clearTimeout(banT);banT=setTimeout(()=>{el.style.display="none";},dur);
+}
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AIRSTRIKE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function doAirstrike(start,end){
+  let dx=end.x-start.x,dy=end.y-start.y,len=Math.hypot(dx,dy);
+  let steps=clamp(Math.floor(len/48)+2,2,12);
+  for(let i=0;i<=steps;i++){
+    let t=i/steps,px=start.x+dx*t,py=start.y+dy*t;
     for(let s of soldiers){
-      if(s.team !== "player" && s.hp > 0){
-        let d = pointLineDistance(s.x, s.y, start.x, start.y, end.x, end.y)
-        if(d < 80){
-          let dmg = (20 + Math.random()*10) * (s.inShelter ? 0.5 : 1)
-          s.hp -= dmg
+      if(s.team==="player"||s.hp<=0)continue;
+      let d=ptLineDist(s.x,s.y,start.x,start.y,end.x,end.y);
+      if(d<85){s.hp-=(20+Math.random()*14)*(s.inShelter?0.5:1);}
+    }
+    for(let k=0;k<5;k++){
+      let rx=px+(Math.random()-.5)*100,ry=py+(Math.random()-.5)*65;
+      bullets.push(new Bullet(rx-180,ry-250,rx,ry,"#ff8030",true));
+    }
+    explosions.push(new Explosion(px,py,true));
+  }
+}
+function ptLineDist(px,py,x1,y1,x2,y2){
+  let A=px-x1,B=py-y1,C=x2-x1,D=y2-y1;
+  let t2=Math.max(0,Math.min(1,(A*C+B*D)/(C*C+D*D||1)));
+  return Math.hypot(px-x1-t2*C,py-y1-t2*D);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BULLETS & EXPLOSIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let bullets=[],explosions=[];
+class Bullet{
+  constructor(x,y,tx,ty,col="#4fc3f7",big=false){this.x=x;this.y=y;this.tx=tx;this.ty=ty;this.life=14;this.col=col;this.big=big;}
+  update(){this.x+=(this.tx-this.x)*0.28;this.y+=(this.ty-this.y)*0.28;this.life--;}
+  draw(){ctx.strokeStyle=this.col;ctx.lineWidth=this.big?3.5:1.8;ctx.beginPath();ctx.moveTo(this.x,this.y);ctx.lineTo(this.tx,this.ty);ctx.stroke();}
+}
+class Explosion{
+  constructor(x,y,big=false){this.x=x;this.y=y;this.life=26;this.max=26;this.big=big;}
+  update(){this.life--;}
+  draw(){
+    let p=this.life/this.max,r=(this.max-this.life)*(this.big?7:4);
+    ctx.fillStyle=`rgba(255,${0|140*p},0,${p*0.75})`;ctx.beginPath();ctx.arc(this.x,this.y,r,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(255,255,120,${p*0.5})`;ctx.beginPath();ctx.arc(this.x,this.y,r*0.45,0,Math.PI*2);ctx.fill();
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SPY PLANE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let spyPlane=null;
+class SpyPlane{
+  constructor(){this.x=W()/2;this.y=H()-100;this.phase=0;this.timer=360;this.state="up";}
+  update(){
+    this.timer--;if(this.timer<=0){spyPlane=null;return;}
+    this.phase+=0.02;
+    if(this.state==="up"){this.y-=2;this.x+=Math.sin(this.phase)*1;if(this.y<OT()+TS()*5)this.state="circle";}
+    else{this.x=W()/2+Math.cos(this.phase)*130;this.y=OT()+TS()*4+Math.sin(this.phase*.7)*30;}
+    let{tx,ty}=worldToTile(this.x,this.y);
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){let nx=tx+dx,ny=ty+dy;if(inM(nx,ny))fog[ny][nx]=true;}
+  }
+  draw(){
+    ctx.font="28px Arial";ctx.textAlign="center";ctx.fillText("🛩️",this.x,this.y);
+    ctx.fillStyle="rgba(255,255,255,.75)";ctx.font="10px Arial";
+    ctx.fillText("⛽"+Math.ceil(this.timer/20)+"s",this.x,this.y-20);
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SOLDIER CLASS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class Soldier{
+  constructor(x,y,team,cls){
+    this.x=x;this.y=y;this.team=team;this.cls=cls;
+    this.hp=cls.hp;this.range=cls.range;this.damage=cls.damage;
+    this.speed=cls.speed||1.2;this.cool=0;this.kills=0;
+    this.inShelter=false;this.terType=T_PLAINS;
+  }
+  getTile(){return worldToTile(this.x,this.y);}
+  update(){
+    this.cool=Math.max(0,this.cool-1);
+    let{tx,ty}=this.getTile();
+    this.terType=inM(tx,ty)?terrain[ty][tx]:T_PLAINS;
+    this.inShelter=false;
+    for(let b of buildings){
+      if(b.x===tx&&b.y===ty&&(b.type==="fortress"||b.type==="barracks")){this.inShelter=true;break;}
+    }
+  }
+  draw(){
+    let big=["tank","artillery"].includes(this.cls.id);
+    let sz=big?26:18;
+    ctx.font=sz+"px Arial";ctx.textAlign="center";
+    // Shadow
+    ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillText(this.cls.emoji,this.x+1,this.y+sz/3+1);
+    ctx.fillText(this.cls.emoji,this.x,this.y+sz/3);
+    // HP bar
+    let bw=20,hp=this.hp/this.cls.hp;
+    ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(this.x-bw/2-1,this.y-sz/2-8,bw+2,5);
+    ctx.fillStyle=hp>.6?"#4caf50":hp>.3?"#ffc107":"#f44336";
+    ctx.fillRect(this.x-bw/2,this.y-sz/2-7,bw*hp,3);
+    // Team dot
+    ctx.fillStyle=this.team==="player"?"#4fc3f7":"#ff5252";
+    ctx.beginPath();ctx.arc(this.x,this.y-sz/2-11,2.5,0,Math.PI*2);ctx.fill();
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SQUAD CLASS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class Squad{
+  constructor(x,y,team,cls){
+    this.team=team;this.cls=cls;this.poi={x,y};
+    this.members=[];this.kills=0;this._bcool=0;
+    let n=cls.count||1;
+    for(let i=0;i<n;i++){
+      let sx=x+(Math.random()-.5)*36,sy=y+(Math.random()-.5)*36;
+      let s=new Soldier(sx,sy,team,cls);
+      this.members.push(s);soldiers.push(s);
+    }
+  }
+  get dead(){return(this.cls.count||1)-this.members.length;}
+  center(){
+    if(!this.members.length)return this.poi;
+    let sx=0,sy=0;for(let m of this.members){sx+=m.x;sy+=m.y;}
+    return{x:sx/this.members.length,y:sy/this.members.length};
+  }
+  isArmoryBoosted(){
+    if(!this.members.length)return false;
+    let{tx,ty}=this.members[0].getTile();
+    return buildings.some(b=>b.type==="armory"&&b.team===(this.team==="player"?1:-1)&&Math.hypot(b.x-tx,b.y-ty)<=3);
+  }
+  captureTerritory(){
+    for(let s of this.members){
+      let{tx,ty}=s.getTile();
+      if(!inM(tx,ty))continue;
+      let own=this.team==="player"?1:-1;
+      if(mapOwn[ty][tx]!==own)mapOwn[ty][tx]=own;
+      fog[ty][tx]=true;
+      // Capture buildings
+      for(let b of buildings){if(b.x===tx&&b.y===ty)b.team=own;}
+    }
+  }
+  update(){
+    let c=this.center();let fighting=false;
+    let armBoost=this.isArmoryBoosted();
+    for(let s of this.members){
+      s.update();if(s.hp<=0)continue;
+      // Medic: heal friendlies
+      if(this.cls.id==="medic"){
+        if(s.cool<=0){
+          for(let sol of soldiers){
+            if(sol.team===this.team&&sol.hp>0&&sol.hp<sol.cls.hp&&Math.hypot(sol.x-s.x,sol.y-s.y)<90)
+              sol.hp=Math.min(sol.cls.hp,sol.hp+2.5);
+          }
+          s.cool=35;
+        }
+        continue;
+      }
+      // Engineer: repair buildings
+      if(this.cls.id==="engineer"){
+        if(s.cool<=0){
+          let{tx,ty}=s.getTile();
+          for(let b of buildings){
+            if(b.x===tx&&b.y===ty&&b.team===(this.team==="player"?1:-1)&&b.hp<b.maxHp){b.hp=Math.min(b.maxHp,b.hp+5);}
+          }
+          s.cool=40;
         }
       }
-    }
-
-    for(let k=0; k<4; k++){
-      let rx = px + (Math.random()-0.5)*100
-      let ry = py + (Math.random()-0.5)*60
-      bullets.push(new Bullet(rx - 200, ry - 300, rx, ry, "orange"))
-    }
-    explosions.push(new Explosion(px, py))
-  }
-}
-
-function pointLineDistance(px,py,x1,y1,x2,y2){
-  let A=px-x1, B=py-y1, C=x2-x1, D=y2-y1
-  let dot = A*C + B*D
-  let len_sq = C*C + D*D || 1
-  let param = Math.max(0, Math.min(1, dot / len_sq))
-  let xx = x1 + param * C
-  let yy = y1 + param * D
-  return Math.hypot(px-xx, py-yy)
-}
-
-function updateBanner(){
-  let ban = document.getElementById("selectionBanner")
-  if(selected && selected.team === "player"){
-    let type = selected instanceof Mortar ? "💣 Mortar" : (selected.cls.count > 1 ? "👥 Squad" : "👤 Unit")
-    ban.innerHTML = `${type} | ❤️ ${selected.members.length} | 💀 ${selected.kills} | ⚰️ ${selected.dead}`
-    ban.style.display = "block"
-  } else {
-    ban.style.display = "none"
-  }
-}
-
-allButtons.forEach(b=>{
-  b.onclick = ()=>{
-    if(activeButton) activeButton.classList.remove("active")
-    placing = b.dataset.class
-    selected = null
-    activeButton = b
-    b.classList.add("active")
-    updateBanner()
-  }
-})
-
-function calculateTerritory(){
-  let p=0, a=0
-  for(let y=0;y<MAP_H;y++){
-    for(let x=0;x<MAP_W;x++){
-      if(map[y][x]==1) p++
-      if(map[y][x]==-1) a++
-    }
-  }
-  let total = MAP_W * MAP_H
-  return [Math.floor(p/total*100), Math.floor(a/total*100)]
-}
-
-// Find connected territory regions for outlining
-function getTerritoryRegions(){
-  let playerTiles = []
-  let enemyTiles = []
-
-  for(let y=0; y<MAP_H; y++){
-    for(let x=0; x<MAP_W; x++){
-      if(map[y][x] === 1) playerTiles.push({x,y})
-      if(map[y][x] === -1) enemyTiles.push({x,y})
-    }
-  }
-
-  return {player: playerTiles, enemy: enemyTiles}
-}
-
-// AI Logic
-let aiTimer = 0
-let aiSpawnTimer = 0
-
-function ai(){
-  aiTimer++
-  aiSpawnTimer++
-
-  // AI spawns units periodically
-  if(aiSpawnTimer > 90){
-    aiSpawnTimer = 0
-    if(points >= 3){
-      let types = ["soldier", "sniper", "squad"]
-      let type = types[Math.floor(Math.random() * types.length)]
-      let cls = classes[type]
-
-      if(points >= cls.cost){
-        points -= cls.cost
-        let tileSize = getTileSize()
-        let mapOffsetX = getMapOffsetX()
-        let x = mapOffsetX + Math.random() * (MAP_W * tileSize)
-        let y = Math.random() * (H() * 0.2)
-
-        let unit = (type === "mortar") ? new Mortar(x, y, "ai", cls) : new Squad(x, y, "ai", cls)
-        // Target player base or random player unit
-        unit.poi = {x: W()/2 + (Math.random()-0.5)*150, y: H() - 80}
-        squads.push(unit)
-      }
-    }
-  }
-
-  // AI moves units toward player territory
-  if(aiTimer > 30){
-    aiTimer = 0
-
-    for(let s of squads){
-      if(s.team === "ai"){
-        let c = s.center()
-
-        // Find nearest player unit or base
-        let nearest = null
-        let nearestDist = Infinity
-
-        for(let e of squads){
-          if(e.team === "player"){
-            let ec = e.center()
-            let d = Math.hypot(ec.x - c.x, ec.y - c.y)
-            if(d < nearestDist){
-              nearestDist = d
-              nearest = ec
+      // Combat
+      for(let e of soldiers){
+        if(e.team===this.team||e.hp<=0)continue;
+        let d=Math.hypot(e.x-s.x,e.y-s.y);
+        if(d<s.range){
+          fighting=true;
+          if(s.cool<=0){
+            let tdef=TDATA[e.terType].defBonus;
+            let tatk=TDATA[s.terType].atkBonus;
+            let shelt=e.inShelter?(this.cls.id==="fortress"?.65:.45):0;
+            let armMult=armBoost?1.25:1;
+            let hitChance=e.inShelter?.42:.72;
+            if(Math.random()<hitChance){
+              let dmg=Math.max(1,s.damage*tatk*armMult*(1-tdef-shelt));
+              e.hp-=dmg;
+              if(e.hp<=0){this.kills++;s.kills++;}
             }
+            let col=this.team==="player"?"#5dd8ff":"#ff6060";
+            let big2=["tank","artillery","rocket"].includes(this.cls.id);
+            bullets.push(new Bullet(s.x,s.y,e.x,e.y,col,big2));
+            s.cool=this.cls.id==="artillery"?65:this.cls.id==="sniper"?50:this.cls.id==="berserker"?14:20;
           }
         }
-
-        // Also look for player territory to capture
-        let tileSize = getTileSize()
-        let mapOffsetX = getMapOffsetX()
-        let tx = Math.floor((c.x - mapOffsetX) / tileSize)
-        let ty = Math.floor(c.y / tileSize)
-
-        if(nearest && nearestDist < 400){
-          s.poi = nearest
-        } else {
-          // Move toward player base
-          s.poi = {x: W()/2 + (Math.random()-0.5)*100, y: H() - 100}
+      }
+    }
+    this.members=this.members.filter(m=>m.hp>0);
+    if(!this.members.length){squads=squads.filter(sq=>sq!==this);return;}
+    this.captureTerritory();
+    // Movement (static artillery don't chase)
+    if((!fighting&&this.cls.id!=="artillery")||this.cls.id==="cavalry"){
+      let dx=this.poi.x-c.x,dy=this.poi.y-c.y,d=Math.hypot(dx,dy);
+      if(d>16){
+        dx/=d;dy/=d;
+        for(let s of this.members){
+          if(s.hp<=0)continue;
+          let tm=TDATA[s.terType].speedMult;
+          let sp=s.speed*tm;
+          s.x+=dx*sp+(Math.random()-.5)*.35;
+          s.y+=dy*sp+(Math.random()-.5)*.35;
+          // Bounds
+          s.x=clamp(s.x,OX()+TS()*.5,OX()+(MAP_W-.5)*TS());
+          s.y=clamp(s.y,OT()+TS()*.5,OT()+(MAP_H-.5)*TS());
+        }
+      }
+    }
+    // Mortar/rocket bombardment
+    if(["mortar","rocket","artillery"].includes(this.cls.id)){
+      this._bcool=Math.max(0,this._bcool-1);
+      if(this._bcool<=0){
+        for(let e of soldiers){
+          if(e.team===this.team||e.hp<=0)continue;
+          let d=Math.hypot(e.x-c.x,e.y-c.y);
+          if(d<this.cls.range&&d>70){
+            for(let near of soldiers){
+              if(near.team===this.team||near.hp<=0)continue;
+              if(Math.hypot(near.x-e.x,near.y-e.y)<55)
+                near.hp-=this.cls.damage*(near.inShelter?.45:1);
+            }
+            explosions.push(new Explosion(e.x,e.y,true));
+            bullets.push(new Bullet(c.x,c.y-25,e.x,e.y,"#ffb030",true));
+            this._bcool=this.cls.id==="artillery"?70:50;break;
+          }
+        }
+      }
+    }
+    // Mine check
+    for(let m of mines){
+      if(m.triggered||m.team===this.team)continue;
+      let{wx,wy}=tileToWorld(m.x,m.y);
+      for(let s of this.members){
+        if(Math.hypot(s.x-wx,s.y-wy)<TS()*1.1){
+          m.triggered=true;
+          for(let sol of soldiers){if(Math.hypot(sol.x-wx,sol.y-wy)<TS()*2)sol.hp-=25+Math.random()*20;}
+          explosions.push(new Explosion(wx,wy,true));break;
+        }
+      }
+    }
+    // Watchtower reveal
+    if(this.team==="player"&&this.members.length){
+      let{tx,ty}=this.members[0].getTile();
+      for(let b of buildings){
+        if(b.type==="watchtower"&&Math.hypot(b.x-tx,b.y-ty)<1.5){
+          for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){let nx=b.x+dx,ny=b.y+dy;if(inM(nx,ny))fog[ny][nx]=true;}
         }
       }
     }
   }
+  draw(){for(let s of this.members)s.draw();}
 }
 
-// Drawing functions
-function drawDesertBackground(){
-  // Desert gradient
-  let grad = ctx.createLinearGradient(0, 0, 0, H())
-  grad.addColorStop(0, "#d4a574")
-  grad.addColorStop(0.5, "#c4956a")
-  grad.addColorStop(1, "#b8860b")
-  ctx.fillStyle = grad
-  ctx.fillRect(0, 0, W(), H())
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// GAME STATE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let squads=[],soldiers=[];
+let gold=15,aiGold=18,timer=180,gameOver=false;
+let goldAccum=0,aiGoldAccum=0,goldMineT=0;
 
-  // Sand dunes texture
-  ctx.fillStyle = "rgba(139, 90, 43, 0.1)"
-  for(let i=0; i<20; i++){
-    let x = (i * 137) % W()
-    let y = (i * 89) % H()
-    ctx.beginPath()
-    ctx.arc(x, y, 30 + (i%3)*20, 0, Math.PI*2)
-    ctx.fill()
+function calcTerritory(){
+  let p=0,a=0,tot=MAP_W*MAP_H;
+  for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){if(mapOwn[y][x]===1)p++;if(mapOwn[y][x]===-1)a++;}
+  return[Math.round(p/tot*100),Math.round(a/tot*100)];
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AI LOGIC
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let aiSpawnT=0,aiMoveT=0;
+const AI_ELIGIBLE=TROOPS.filter(t=>!["spy","airstrike","mine","paratrooper","medic"].includes(t.id));
+
+function pickCounterUnit(){
+  let ps=squads.filter(s=>s.team==="player");
+  let hasTank=ps.some(s=>s.cls.id==="tank");
+  let hasSniper=ps.some(s=>s.cls.id==="sniper");
+  let hasBerserk=ps.some(s=>s.cls.id==="berserker");
+  let hasMany=ps.length>=3;
+  let pref=[];
+  if(hasTank)pref.push("rocket","artillery","mortar");
+  if(hasSniper)pref.push("cavalry","berserker","shield");
+  if(hasBerserk)pref.push("shield","squad","sniper");
+  if(hasMany)pref.push("mortar","artillery");
+  // Try preferred counters that AI can afford
+  for(let id of pref){
+    let t=AI_ELIGIBLE.find(e=>e.id===id);
+    if(t&&t.cost<=aiGold){return t;}
+  }
+  // Fallback: pick any affordable unit, weighted toward cheaper
+  let pool=AI_ELIGIBLE.filter(t=>t.cost<=aiGold);
+  if(!pool.length){
+    // Can't afford anything yet — return cheapest possible
+    let cheapest=[...AI_ELIGIBLE].sort((a,b)=>a.cost-b.cost)[0];
+    return cheapest;
+  }
+  let w=pool.map(t=>Math.max(1,10-t.cost));
+  let tot=w.reduce((a,b)=>a+b,0),r=Math.random()*tot;
+  for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
+  return pool[pool.length-1];
+}
+
+function aiMoveSquad(s){
+  let c=s.center();
+  let ps=squads.filter(sq=>sq.team==="player"&&sq.members.length);
+  // Nearest player target
+  let nearest=null,nDist=Infinity;
+  for(let p2 of ps){let pc=p2.center(),d=Math.hypot(pc.x-c.x,pc.y-c.y);if(d<nDist){nDist=d;nearest=p2;}}
+  // Strategic building
+  let sbest=null,sBestD=Infinity;
+  for(let b of buildings){
+    if(b.team===1){let{wx,wy}=tileToWorld(b.x,b.y);let d=Math.hypot(wx-c.x,wy-c.y);if(d<sBestD){sBestD=d;sbest={x:wx,y:wy};}}
+  }
+  // Cavalry flanks
+  if(s.cls.id==="cavalry"){
+    let side=Math.random()<.5?OX()+TS()*2:OX()+(MAP_W-2)*TS();
+    s.poi={x:side,y:OT()+(MAP_H-3)*TS()};return;
+  }
+  if(nearest&&nDist<550){
+    let nc=nearest.center();s.poi={x:nc.x+(Math.random()-.5)*35,y:nc.y+(Math.random()-.5)*35};
+  } else if(sbest&&sBestD<450){
+    s.poi={x:sbest.x,y:sbest.y};
+  } else {
+    s.poi={x:W()/2+(Math.random()-.5)*180,y:OT()+(MAP_H-4)*TS()};
   }
 }
 
-function drawTiles(){
-  let tileSize = getTileSize()
-  let mapOffsetX = getMapOffsetX()
+function updateAI(dt){
+  aiGoldAccum+=dt;
+  if(aiGoldAccum>=1){aiGoldAccum-=1;aiGold+=1.2;} // slightly faster than player
+  aiSpawnT+=dt;
+  if(aiSpawnT>1.6){
+    aiSpawnT=0;
+    let cls=pickCounterUnit();
+    // Only spawn if we can actually afford it; otherwise just accumulate gold
+    if(cls&&aiGold>=cls.cost){
+      aiGold-=cls.cost;
+      let x=OX()+(2+Math.random()*(MAP_W-4))*TS();
+      let y=OT()+(0.5+Math.random()*5)*TS();
+      let sq=new Squad(x,y,"ai",{...cls});
+      aiMoveSquad(sq);
+      squads.push(sq);
+    }
+    // If can't afford, keep saving - don't reset timer so we try again next tick
+    else if(cls){
+      aiSpawnT=1.0; // try again in 0.6s
+    }
+  }
+  aiMoveT+=dt;
+  if(aiMoveT>.5){
+    aiMoveT=0;
+    for(let s of squads){if(s.team==="ai")aiMoveSquad(s);}
+  }
+}
 
-  for(let y=0; y<MAP_H; y++){
-    for(let x=0; x<MAP_W; x++){
-      let px = mapOffsetX + x * tileSize
-      let py = 60 + y * tileSize // Offset for header
-
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// RENDERING
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function drawTerrain(){
+  let ts=TS(),ox=OX(),ot=OT();
+  for(let y=0;y<MAP_H;y++){
+    for(let x=0;x<MAP_W;x++){
+      let px=ox+x*ts,py=ot+y*ts;
       if(!fog[y][x]){
-        ctx.fillStyle = "rgba(0,0,0,0.6)"
-        ctx.fillRect(px, py, tileSize, tileSize)
-        continue
+        ctx.fillStyle="#0d0d14";ctx.fillRect(px,py,ts,ts);
+        ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=.5;ctx.strokeRect(px,py,ts,ts);
+        continue;
       }
-
-      if(map[y][x] === 1){
-        ctx.fillStyle = "rgba(79, 195, 247, 0.5)" // Blue for player
-      } else if(map[y][x] === -1){
-        ctx.fillStyle = "rgba(255, 82, 82, 0.5)" // Red for enemy
-      } else {
-        ctx.fillStyle = "rgba(210, 180, 140, 0.3)" // Neutral desert
+      let td=TDATA[terrain[y][x]];
+      ctx.fillStyle=td.color;ctx.fillRect(px,py,ts,ts);
+      // Ownership tint
+      if(mapOwn[y][x]===1)      {ctx.fillStyle="rgba(79,195,247,.25)";ctx.fillRect(px,py,ts,ts);}
+      else if(mapOwn[y][x]===-1){ctx.fillStyle="rgba(255,82,82,.25)"; ctx.fillRect(px,py,ts,ts);}
+      // Terrain icon
+      if(ts>=13&&td.icon){
+        ctx.font=Math.min(ts-3,12)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText(td.icon,px+ts/2,py+ts/2);ctx.textBaseline="alphabetic";
       }
-
-      ctx.fillRect(px, py, tileSize, tileSize)
-
-      // Grid lines
-      ctx.strokeStyle = "rgba(0,0,0,0.15)"
-      ctx.lineWidth = 1
-      ctx.strokeRect(px, py, tileSize, tileSize)
+      // Grid
+      ctx.strokeStyle="rgba(0,0,0,.12)";ctx.lineWidth=.5;ctx.strokeRect(px,py,ts,ts);
     }
   }
 }
 
-function drawTerritoryOutlines(){
-  let tileSize = getTileSize()
-  let mapOffsetX = getMapOffsetX()
-
-  // Draw outlines around connected territories
-  ctx.lineWidth = 4
-
-  // Player outline (blue)
-  ctx.strokeStyle = "#4fc3f7"
-  ctx.beginPath()
-  for(let y=0; y<MAP_H; y++){
-    for(let x=0; x<MAP_W; x++){
-      if(map[y][x] === 1 && fog[y][x]){
-        let px = mapOffsetX + x * tileSize
-        let py = 60 + y * tileSize
-
-        // Check edges
-        if(y===0 || map[y-1][x] !== 1) {
-          ctx.moveTo(px, py)
-          ctx.lineTo(px + tileSize, py)
-        }
-        if(y===MAP_H-1 || map[y+1][x] !== 1) {
-          ctx.moveTo(px, py + tileSize)
-          ctx.lineTo(px + tileSize, py + tileSize)
-        }
-        if(x===0 || map[y][x-1] !== 1) {
-          ctx.moveTo(px, py)
-          ctx.lineTo(px, py + tileSize)
-        }
-        if(x===MAP_W-1 || map[y][x+1] !== 1) {
-          ctx.moveTo(px + tileSize, py)
-          ctx.lineTo(px + tileSize, py + tileSize)
-        }
-      }
+function drawOutlines(){
+  let ts=TS(),ox=OX(),ot=OT();
+  function outline(own,col){
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();
+    for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
+      if(mapOwn[y][x]!==own||!fog[y][x])continue;
+      let px=ox+x*ts,py=ot+y*ts;
+      if(y===0||mapOwn[y-1][x]!==own){ctx.moveTo(px,py);ctx.lineTo(px+ts,py);}
+      if(y===MAP_H-1||mapOwn[y+1][x]!==own){ctx.moveTo(px,py+ts);ctx.lineTo(px+ts,py+ts);}
+      if(x===0||mapOwn[y][x-1]!==own){ctx.moveTo(px,py);ctx.lineTo(px,py+ts);}
+      if(x===MAP_W-1||mapOwn[y][x+1]!==own){ctx.moveTo(px+ts,py);ctx.lineTo(px+ts,py+ts);}
     }
+    ctx.stroke();
   }
-  ctx.stroke()
-
-  // Enemy outline (red)
-  ctx.strokeStyle = "#ff5252"
-  ctx.beginPath()
-  for(let y=0; y<MAP_H; y++){
-    for(let x=0; x<MAP_W; x++){
-      if(map[y][x] === -1 && fog[y][x]){
-        let px = mapOffsetX + x * tileSize
-        let py = 60 + y * tileSize
-
-        if(y===0 || map[y-1][x] !== -1) {
-          ctx.moveTo(px, py)
-          ctx.lineTo(px + tileSize, py)
-        }
-        if(y===MAP_H-1 || map[y+1][x] !== -1) {
-          ctx.moveTo(px, py + tileSize)
-          ctx.lineTo(px + tileSize, py + tileSize)
-        }
-        if(x===0 || map[y][x-1] !== -1) {
-          ctx.moveTo(px, py)
-          ctx.lineTo(px, py + tileSize)
-        }
-        if(x===MAP_W-1 || map[y][x+1] !== -1) {
-          ctx.moveTo(px + tileSize, py)
-          ctx.lineTo(px + tileSize, py + tileSize)
-        }
-      }
-    }
-  }
-  ctx.stroke()
+  outline(1,"#4fc3f7");outline(-1,"#ff5252");
 }
 
 function drawBuildings(){
-  let tileSize = getTileSize()
-  let mapOffsetX = getMapOffsetX()
-
+  let ts=TS(),ox=OX(),ot=OT();
   for(let b of buildings){
-    let px = mapOffsetX + b.x * tileSize + 4
-    let py = 60 + b.y * tileSize + 4
-
-    ctx.font = (tileSize - 8) + "px Arial"
-    ctx.textAlign = "center"
-    ctx.fillText("🏠", px + tileSize/2 - 4, py + tileSize/2 + 4)
+    if(!fog[b.y][b.x])continue;
+    let px=ox+b.x*ts+ts/2,py=ot+b.y*ts+ts/2;
+    let bt=BTYPES[b.type];
+    let sz=Math.min(ts-2,18);
+    ctx.font=sz+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+    // Background circle
+    ctx.fillStyle="rgba(0,0,0,.45)";ctx.beginPath();ctx.arc(px,py,sz/2+3,0,Math.PI*2);ctx.fill();
+    ctx.fillText(bt.emoji,px,py);ctx.textBaseline="alphabetic";
+    // Team ring
+    if(b.team!==0){
+      ctx.strokeStyle=b.team===1?"#4fc3f7":"#ff5252";ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(px,py,sz/2+5,0,Math.PI*2);ctx.stroke();
+    }
+    // HP bar
+    let hp=b.hp/b.maxHp;
+    ctx.fillStyle="rgba(0,0,0,.7)";ctx.fillRect(px-11,py-sz/2-9,22,3);
+    ctx.fillStyle=hp>.5?"#4caf50":"#ff9800";ctx.fillRect(px-11,py-sz/2-9,22*hp,3);
   }
 }
 
-function drawFogZones(){
-  // Draw the 25% fog zones
-  let zoneHeight = (H() - 140) * 0.25
-
-  // Enemy fog zone (top 25%)
-  ctx.fillStyle = "rgba(0,0,0,0.2)"
-  ctx.fillRect(0, 60, W(), zoneHeight)
-
-  // Player fog zone (bottom 25%)
-  ctx.fillRect(0, H() - zoneHeight - 80, W(), zoneHeight)
-
-  // Labels
-  ctx.fillStyle = "rgba(255,255,255,0.5)"
-  ctx.font = "16px Arial"
-  ctx.textAlign = "center"
-  ctx.fillText("🌫️ ENEMY FOG ZONE", W()/2, 60 + zoneHeight/2)
-  ctx.fillText("🌫️ PLAYER FOG ZONE", W()/2, H() - zoneHeight/2 - 40)
+function drawMines(){
+  let ts=TS(),ox=OX(),ot=OT();
+  for(let m of mines){
+    if(m.triggered||!fog[m.y][m.x])continue;
+    let px=ox+m.x*ts+ts/2,py=ot+m.y*ts+ts/2;
+    if(m.team==="player"){
+      ctx.font=Math.min(ts-2,14)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText("⚠️",px,py);ctx.textBaseline="alphabetic";
+    }
+  }
 }
 
-function isVisible(unit){
-  let zoneHeight = (H() - 140) * 0.25
+function drawSelection(){
+  if(!selected||selected.team!=="player"||!selected.members.length)return;
+  let c=selected.center();
+  ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineWidth=2;ctx.setLineDash([7,5]);
+  ctx.beginPath();ctx.arc(c.x,c.y,30,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  if(selected.poi){
+    ctx.strokeStyle="rgba(255,255,255,.4)";ctx.lineWidth=1.5;ctx.setLineDash([8,8]);
+    ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(selected.poi.x,selected.poi.y);ctx.stroke();ctx.setLineDash([]);
+    ctx.font="16px Arial";ctx.textAlign="center";ctx.fillText("📍",selected.poi.x,selected.poi.y);
+  }
+}
 
-  if(unit.team === "player") return true
-  if(spyPlane) return true
+function drawDragLine(){
+  if(!dragStart||!placing||placing.id!=="airstrike"||!lastPointer)return;
+  ctx.strokeStyle="rgba(255,80,50,.7)";ctx.lineWidth=3;ctx.setLineDash([12,8]);
+  ctx.beginPath();ctx.moveTo(dragStart.x,dragStart.y);ctx.lineTo(lastPointer.x,lastPointer.y);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font="22px Arial";ctx.textAlign="center";
+  ctx.fillText("✈️",lastPointer.x,lastPointer.y-10);
+}
 
-  // Enemy units hidden in top 25% (their territory)
-  if(unit.y < 60 + zoneHeight) return false
+function drawPlacingCursor(){
+  if(!placing||placing.id==="airstrike"||!lastPointer)return;
+  let{tx,ty}=worldToTile(lastPointer.x,lastPointer.y);
+  if(!inM(tx,ty))return;
+  let ts=TS(),ox=OX(),ot=OT();
+  let px=ox+tx*ts,py=ot+ty*ts;
+  // Valid highlight
+  let valid=placing.id==="paratrooper"||(inM(tx,ty)&&mapOwn[ty][tx]!==-1);
+  ctx.strokeStyle=valid?"rgba(79,195,247,.7)":"rgba(255,82,82,.7)";
+  ctx.lineWidth=2;ctx.setLineDash([4,3]);
+  ctx.strokeRect(px+1,py+1,ts-2,ts-2);ctx.setLineDash([]);
+  ctx.fillStyle=valid?"rgba(79,195,247,.1)":"rgba(255,82,82,.1)";
+  ctx.fillRect(px+1,py+1,ts-2,ts-2);
+  ctx.font=Math.min(ts-4,18)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(placing.emoji,px+ts/2,py+ts/2);ctx.textBaseline="alphabetic";
+  // Mine range indicator
+  if(placing.id==="mine"){
+    ctx.strokeStyle="rgba(255,200,0,.35)";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.strokeRect(ox+(tx-4)*ts,ot+(ty-4)*ts,8*ts,8*ts);ctx.setLineDash([]);
+  }
+}
 
-  // Enemy units visible in middle 50%
-  return true
+// Enemy home zone = top FOG_ROWS rows — always hidden unless spy plane active
+const FOG_ROWS=8;
+
+function isEnemyFogTile(ty){return ty<FOG_ROWS;}
+function enemyTileVisible(tx,ty){
+  if(!isEnemyFogTile(ty))return true; // middle/bottom always visible if in fog[]
+  return spyPlane!==null; // only revealed by spy plane
 }
 
 function draw(){
-  drawDesertBackground()
-  drawTiles()
-  drawTerritoryOutlines()
-  drawBuildings()
-  drawFogZones()
-
-  // Draw units
-  for(let s of squads){
-    if(isVisible(s)){
-      s.draw()
+  ctx.clearRect(0,0,W(),H());
+  ctx.fillStyle="#0c0c14";ctx.fillRect(0,0,W(),H());
+  drawTerrain();drawOutlines();drawBuildings();drawMines();
+  // Draw squads
+  for(let sq of squads){
+    if(sq.team==="ai"){
+      let c=sq.center();let{tx,ty}=worldToTile(c.x,c.y);
+      // Hide enemy units in their home fog zone unless spy plane active
+      if(isEnemyFogTile(ty)&&!spyPlane)continue;
+      // Also hide enemy units outside fog (unexplored tiles) in middle zone
+      if(!isEnemyFogTile(ty)&&inM(tx,ty)&&!fog[ty][tx])continue;
     }
+    sq.draw();
   }
-
-  // Draw bullets
-  bullets.forEach(b=>b.draw())
-  explosions.forEach(e=>e.draw())
-
-  // Spy plane always visible
-  if(spyPlane) spyPlane.draw()
-
-  // Selection indicator
-  if(selected){
-    let c = selected.center()
-    ctx.strokeStyle = "white"
-    ctx.lineWidth = 3
-    ctx.setLineDash([8,8])
-    ctx.beginPath()
-    ctx.arc(c.x, c.y, 35, 0, Math.PI*2)
-    ctx.stroke()
-    ctx.setLineDash([])
-
-    // Movement line
-    if(selected.poi){
-      ctx.strokeStyle = "rgba(255,255,255,0.6)"
-      ctx.lineWidth = 2
-      ctx.setLineDash([10,10])
-      ctx.beginPath()
-      ctx.moveTo(c.x, c.y)
-      ctx.lineTo(selected.poi.x, selected.poi.y)
-      ctx.stroke()
-      ctx.setLineDash([])
-
-      // Target marker
-      ctx.font = "24px Arial"
-      ctx.fillText("📍", selected.poi.x, selected.poi.y)
-    }
-  }
-
-  // Airstrike drag line
-  if(dragStart && placing === "airstrike"){
-    ctx.strokeStyle = "red"
-    ctx.lineWidth = 4
-    ctx.setLineDash([12,8])
-    ctx.beginPath()
-    ctx.moveTo(dragStart.x, dragStart.y)
-    ctx.lineTo(getPos({clientX:W()/2,clientY:H()/2}).x, getPos({clientY:H()/2}).y)
-    ctx.stroke()
-    ctx.setLineDash([])
-  }
+  bullets.forEach(b=>b.draw());explosions.forEach(e=>e.draw());
+  if(spyPlane)spyPlane.draw();
+  // Draw enemy fog overlay on top (always covers enemy base unless spy)
+  drawEnemyFogOverlay();
+  drawSelection();drawDragLine();drawPlacingCursor();
 }
 
-function update(){
-  const now = performance.now()
-  const delta = (now - lastTime) / 1000
-  lastTime = now
-
-  if(timer > 0 && !gameOver){
-    ai()
-
-    // Update squads
-    for(let s of [...squads]){
-      s.update()
-    }
-
-    // Update bullets
-    for(let b of bullets){
-      b.update()
-    }
-    bullets = bullets.filter(b => b.life > 0)
-
-    // Update explosions
-    for(let e of explosions){
-      e.update()
-    }
-    explosions = explosions.filter(e => e.life > 0)
-
-    // Update spy plane
-    if(spyPlane){
-      spyPlane.update()
-    }
-
-    // Cleanup
-    soldiers = soldiers.filter(s => s.hp > 0)
-
-    points += 0.03 * delta * 60
-    timer -= delta
-  }
-
-  timer = Math.max(0, timer)
-
-  if(timer <= 0 && !gameOver){
-    timer = 0
-    gameOver = true
-    let t = calculateTerritory()
-    let winner = t[0]>t[1] ? "🏆 YOU WIN!" : t[0]<t[1] ? "💀 AI WINS!" : "🤝 DRAW"
-    document.getElementById("winnerText").innerHTML = winner
-    document.getElementById("matchStats").innerHTML = `
-      <div style="font-size: 32px; margin: 10px 0;">
-        🏴 You: ${t[0]}% | 🏴 Enemy: ${t[1]}%
-      </div>
-      <div style="font-size: 20px; color: #aaa;">
-        💰 Final Points: ${Math.floor(points)}
-      </div>
-    `
-    document.getElementById("endScreen").style.display = "flex"
-  }
-
-  // Update UI
-  let t = calculateTerritory()
-  document.getElementById("timerDisplay").innerText = "⏱️ " + Math.floor(timer)
-  document.getElementById("pointsDisplay").innerText = "💰 " + Math.floor(points)
-  document.getElementById("playerScore").innerText = "🏴 " + t[0] + "%"
-  document.getElementById("enemyScore").innerText = "🏴 " + t[1] + "%"
-
-  // Update button states
-  allButtons.forEach(b => {
-    let cls = classes[b.dataset.class]
-    if(points < cls.cost){
-      b.classList.add("disabled")
-    } else {
-      b.classList.remove("disabled")
-    }
-  })
+function drawEnemyFogOverlay(){
+  let ts=TS(),ox=OX(),ot=OT();
+  if(spyPlane)return; // spy plane removes overlay
+  // Solid fog over top FOG_ROWS rows
+  let fogH=FOG_ROWS*ts;
+  // Dark fog fill
+  ctx.fillStyle="rgba(5,5,20,0.82)";
+  ctx.fillRect(ox,ot,MAP_W*ts,fogH);
+  // Subtle border at fog line
+  ctx.strokeStyle="rgba(80,80,180,0.4)";
+  ctx.lineWidth=2;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(ox,ot+fogH);ctx.lineTo(ox+MAP_W*ts,ot+fogH);ctx.stroke();ctx.setLineDash([]);
+  // Fog label
+  ctx.fillStyle="rgba(120,130,200,0.5)";
+  ctx.font="11px Arial";ctx.textAlign="center";
+  ctx.fillText("☁️  ENEMY TERRITORY — FOG OF WAR  ☁️",ox+MAP_W*ts/2,ot+fogH/2+4);
 }
 
-function loop(){
-  update()
-  draw()
-  requestAnimationFrame(loop)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// FIXED-STEP GAME LOOP
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let lastTime=performance.now(),accum=0;
+const STEP=1/60;
+
+function logicStep(dt){
+  timer-=dt;if(timer<=0){timer=0;}
+  // Player gold
+  goldAccum+=dt;if(goldAccum>=1){goldAccum-=1;gold+=1;}
+  // Building income
+  goldMineT+=dt;
+  if(goldMineT>=1){goldMineT=0;
+    for(let b of buildings){
+      if(b.type==="goldmine"&&b.team===1){
+        let near=soldiers.some(s=>{if(s.team!=="player"||s.hp<=0)return false;let{tx,ty}=s.getTile();return Math.abs(tx-b.x)+Math.abs(ty-b.y)<=2;});
+        if(near)gold+=2;
+      }
+      if(b.type==="barracks"&&b.team===1)gold+=0.2;
+    }
+  }
+  updateAI(dt);
+  for(let sq of [...squads])sq.update();
+  for(let b of bullets)b.update();bullets=bullets.filter(b=>b.life>0);
+  for(let e of explosions)e.update();explosions=explosions.filter(e=>e.life>0);
+  if(spyPlane)spyPlane.update();
+  soldiers=soldiers.filter(s=>s.hp>0);
+  // Update UI displays
+  let[tp,ta]=calcTerritory();
+  document.getElementById("tDisp").textContent=Math.ceil(timer);
+  document.getElementById("gDisp").textContent=Math.floor(gold);
+  document.getElementById("pScore").textContent=tp+"%";
+  document.getElementById("eScore").textContent=ta+"%";
+  renderHand();
+  if(timer<=0&&!gameOver){gameOver=true;showEnd();}
 }
 
-loop()
+function gameLoop(now){
+  let dt=Math.min((now-lastTime)/1000,.1);lastTime=now;
+  if(!gameOver){
+    accum+=dt;
+    while(accum>=STEP){accum-=STEP;logicStep(STEP);}
+  }
+  draw();requestAnimationFrame(gameLoop);
+}
 
+function showEnd(){
+  let[tp,ta]=calcTerritory();
+  let wt=tp>ta?"🏆 YOU WIN!":tp<ta?"💀 AI WINS!":"🤝 DRAW";
+  let el=document.getElementById("endTitle");
+  el.textContent=wt;el.style.color=tp>ta?"#4fc3f7":tp<ta?"#ff5252":"#ffd54f";
+  document.getElementById("endStats").innerHTML=
+    `<div>🏴 You: ${tp}% &nbsp;|&nbsp; ☠️ Enemy: ${ta}%</div>`+
+    `<div style="font-size:14px;color:#666;margin-top:8px">💰 Gold earned: ${Math.floor(gold)}</div>`;
+  document.getElementById("end").style.display="flex";
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INIT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function init(){
+  initTerrain();initBuildings();
+  mines=[];squads=[];soldiers=[];bullets=[];explosions=[];spyPlane=null;
+  gold=15;aiGold=18;timer=180;gameOver=false;
+  goldAccum=0;aiGoldAccum=0;goldMineT=0;aiSpawnT=0;aiMoveT=0;accum=0;
+  placing=null;placingIdx=-1;selected=null;dragStart=null;lastPointer=null;
+  buildDeck();
+  resize();
+}
+init();
+requestAnimationFrame(gameLoop);
 </script>
 </body>
 </html>
