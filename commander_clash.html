@@ -5,77 +5,78 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>⚔️ Commander Clash</title>
 <style>
-/* ── [#6] iPhone zoom & text selection lock ── */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;
   -webkit-user-select:none;user-select:none;touch-action:none;}
 html,body{margin:0;overflow:hidden;background:#0a0a0f;
-  font-family:'Segoe UI',system-ui,sans-serif;
-  touch-action:none;-webkit-text-size-adjust:none;}
+  font-family:'Segoe UI',system-ui,sans-serif;touch-action:none;-webkit-text-size-adjust:none;}
 canvas{display:block;touch-action:none;}
-
 #header{position:absolute;top:0;left:0;right:0;height:56px;
   background:linear-gradient(180deg,#070710 0%,rgba(7,7,16,.94)100%);
   color:#fff;display:flex;align-items:center;justify-content:space-between;
   padding:0 10px;z-index:100;border-bottom:2px solid #1e2d4a;
   box-shadow:0 2px 20px rgba(0,0,0,.9);}
-.hdr{display:flex;flex-direction:column;align-items:center;min-width:68px;}
+.hdr{display:flex;flex-direction:column;align-items:center;min-width:60px;}
 .hlabel{font-size:9px;opacity:.65;text-transform:uppercase;letter-spacing:1.5px;}
-.hval{font-size:21px;font-weight:900;line-height:1;}
+.hval{font-size:20px;font-weight:900;line-height:1;}
 #pScore{color:#4fc3f7;}#eScore{color:#ff5252;}#tDisp{color:#ffd54f;}#gDisp{color:#81c784;}
-.hcenter{display:flex;gap:14px;align-items:center;}
+.hcenter{display:flex;gap:10px;align-items:center;}
+/* Rally flag indicator */
+#rallyIndicator{font-size:10px;color:#ffd54f;opacity:.7;text-align:center;line-height:1.2;}
 
 #ui{position:absolute;bottom:0;left:0;right:0;
   background:linear-gradient(0deg,#060810 0%,rgba(6,8,14,.97)100%);
-  padding:8px 6px 12px;z-index:100;border-top:2px solid #1e2d4a;}
-#cardRow{display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:5px;}
-
-.tc{width:68px;height:86px;border-radius:10px;border:2px solid #252535;
+  padding:6px 6px 10px;z-index:100;border-top:2px solid #1e2d4a;}
+#cardRow{display:flex;gap:5px;align-items:center;justify-content:center;margin-bottom:4px;}
+.tc{width:64px;height:82px;border-radius:10px;border:2px solid #252535;
   background:linear-gradient(155deg,#151828,#0c0f1e);color:#fff;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;position:relative;
+  gap:1px;cursor:pointer;position:relative;
   transition:transform .12s,border-color .12s,box-shadow .12s;
   flex-shrink:0;touch-action:manipulation;}
 .tc:active{transform:scale(.92);}
 .tc.active{border-color:#4fc3f7;box-shadow:0 0 16px #4fc3f780;
   background:linear-gradient(155deg,#0d2540,#091830);}
-/* [#4] Drag-to-offhand: glow when dragging over offhand */
 .tc.dragging{opacity:.5;transform:scale(.88);}
-.tc .ce{font-size:24px;line-height:1.1;}
-.tc .cn{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;opacity:.8;}
+.tc .ce{font-size:22px;line-height:1.1;}
+.tc .cn{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;opacity:.8;}
 .tc .cc{font-size:11px;color:#ffd54f;font-weight:900;}
-.tc .cd{font-size:7px;opacity:.45;text-align:center;padding:0 3px;}
+.tc .cd{font-size:6.5px;opacity:.45;text-align:center;padding:0 2px;}
+/* Air unit card tint */
+.tc.air-card{border-color:#a855f7;background:linear-gradient(155deg,#1a0d2e,#0e0819);}
+.tc.air-card .cc{color:#c084fc;}
 
-/* [#4] Floating drag ghost card */
-#dragGhost{position:fixed;pointer-events:none;z-index:300;display:none;
-  width:68px;height:86px;border-radius:10px;border:2px solid #4fc3f7;
+#dragGhost{position:fixed;pointer-events:none;z-index:300;
+  width:64px;height:82px;border-radius:10px;border:2px solid #4fc3f7;
   background:linear-gradient(155deg,#0d2540,#091830);color:#fff;
   display:none;flex-direction:column;align-items:center;justify-content:center;
   gap:2px;font-size:11px;opacity:.9;box-shadow:0 0 20px #4fc3f760;}
-
-#offhand{width:56px;height:74px;border-radius:8px;border:2px dashed #2a3050;
+#offhand{width:52px;height:70px;border-radius:8px;border:2px dashed #2a3050;
   background:rgba(255,255,255,.03);color:#888;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:1px;cursor:pointer;
   font-size:9px;text-align:center;flex-shrink:0;position:relative;
   transition:border-color .15s,background .15s,box-shadow .15s;}
 #offhand.has{border-color:#7c4dff;background:rgba(124,77,255,.1);}
-/* [#4] Offhand glows when valid drag target */
-#offhand.dropready{border-color:#4fc3f7;background:rgba(79,195,247,.15);
-  box-shadow:0 0 18px #4fc3f780;}
-#offhand .oe{font-size:20px;}
+#offhand.dropready{border-color:#4fc3f7;background:rgba(79,195,247,.15);box-shadow:0 0 18px #4fc3f780;}
+#offhand .oe{font-size:18px;}
 #offhand .ol{font-size:7px;position:absolute;top:3px;opacity:.4;}
-
-#uibot{display:flex;gap:6px;align-items:center;justify-content:center;}
-#deckinfo{font-size:11px;color:#666;}
-/* [#5] Cycle hand button */
-#cycleBtn{padding:4px 10px;font-size:11px;font-weight:700;
+#uibot{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;}
+#deckinfo{font-size:10px;color:#666;}
+#cycleBtn{padding:3px 8px;font-size:10px;font-weight:700;
   background:linear-gradient(145deg,#1a2540,#0f1830);
-  color:#7ec8e3;border:1.5px solid #2a4060;border-radius:8px;cursor:pointer;
+  color:#7ec8e3;border:1.5px solid #2a4060;border-radius:7px;cursor:pointer;
   touch-action:manipulation;flex-shrink:0;}
-#cycleBtn:active{transform:scale(.93);background:linear-gradient(145deg,#223050,#182240);}
+#cycleBtn:active{transform:scale(.93);}
+/* Rally button */
+#rallyBtn{padding:3px 8px;font-size:10px;font-weight:700;
+  background:linear-gradient(145deg,#2a1a10,#1a1005);
+  color:#ffd54f;border:1.5px solid #5a3a10;border-radius:7px;cursor:pointer;
+  touch-action:manipulation;flex-shrink:0;}
+#rallyBtn.active-rally{border-color:#ffd54f;box-shadow:0 0 10px #ffd54f60;color:#fff;}
+#rallyBtn:active{transform:scale(.93);}
 
 #banner{position:absolute;top:62px;left:50%;transform:translateX(-50%);
-  background:rgba(0,0,0,.88);color:#fff;padding:7px 18px;border-radius:18px;
-  font-size:12px;display:none;z-index:99;white-space:nowrap;
+  background:rgba(0,0,0,.88);color:#fff;padding:6px 16px;border-radius:18px;
+  font-size:11px;display:none;z-index:99;white-space:nowrap;
   border:1.5px solid #444;box-shadow:0 3px 12px rgba(0,0,0,.6);}
 #hprev{position:absolute;pointer-events:none;z-index:98;display:none;
   flex-direction:column;align-items:center;background:rgba(0,0,0,.88);
@@ -83,28 +84,28 @@ canvas{display:block;touch-action:none;}
 #hprev .hpe{font-size:26px;}
 #end{display:none;position:absolute;inset:0;background:rgba(0,0,0,.97);color:#fff;
   justify-content:center;align-items:center;flex-direction:column;z-index:200;padding:20px;}
-#end h1{font-size:42px;margin:8px 0;text-shadow:0 0 20px currentColor;}
-#endStats{font-size:18px;margin:12px 0;text-align:center;line-height:1.9;}
-#replayBtn{padding:15px 34px;font-size:18px;
+#end h1{font-size:38px;margin:8px 0;text-shadow:0 0 20px currentColor;}
+#endStats{font-size:16px;margin:12px 0;text-align:center;line-height:2;}
+#replayBtn{padding:14px 30px;font-size:17px;
   background:linear-gradient(145deg,#4CAF50,#2E7D32);
-  color:#fff;border:none;border-radius:12px;margin-top:20px;font-weight:800;cursor:pointer;}
+  color:#fff;border:none;border-radius:12px;margin-top:16px;font-weight:800;cursor:pointer;}
+/* Morale flash */
+@keyframes moraleFlash{0%{opacity:1}50%{opacity:.2}100%{opacity:1}}
 </style>
 </head>
 <body>
 <div id="header">
   <div class="hdr"><span class="hlabel">🏴 YOU</span><span class="hval" id="pScore">0%</span></div>
   <div class="hcenter">
-    <div class="hdr"><span class="hlabel">⏱ TIME</span><span class="hval" id="tDisp">180</span></div>
+    <div class="hdr"><span class="hlabel">⏱ TIME</span><span class="hval" id="tDisp">240</span></div>
     <div class="hdr"><span class="hlabel">💰 GOLD</span><span class="hval" id="gDisp">15</span></div>
+    <div id="rallyIndicator">📍<br>No rally</div>
   </div>
   <div class="hdr"><span class="hlabel">☠️ ENEMY</span><span class="hval" id="eScore">0%</span></div>
 </div>
 <div id="banner"></div>
 <div id="hprev"><div class="hpe" id="hpe"></div><div id="hpn" style="font-weight:800"></div><div id="hpi" style="font-size:9px;opacity:.65"></div></div>
-
-<!-- [#4] Drag ghost element -->
 <div id="dragGhost"></div>
-
 <canvas id="game"></canvas>
 <div id="ui">
   <div id="cardRow">
@@ -115,9 +116,9 @@ canvas{display:block;touch-action:none;}
   </div>
   <div id="uibot">
     <span id="deckinfo">🃏 --</span>
-    <!-- [#5] Cycle hand button -->
-    <button id="cycleBtn" title="Discard hand and draw 3 new cards">⟳ NEW HAND</button>
-    <span style="font-size:9px;color:#444">Hold to preview</span>
+    <button id="cycleBtn">⟳ NEW HAND</button>
+    <button id="rallyBtn">📍 RALLY</button>
+    <span style="font-size:8px;color:#444">Hold=preview</span>
   </div>
 </div>
 <div id="end">
@@ -125,7 +126,6 @@ canvas{display:block;touch-action:none;}
   <div id="endStats"></div>
   <button id="replayBtn" onclick="location.reload()">🔄 PLAY AGAIN</button>
 </div>
-
 <script>
 // ═══════════════════════════════════════════════════
 // CANVAS & LAYOUT
@@ -142,8 +142,7 @@ function resize(){
   canvas.height=window.innerHeight;
   UI_H=document.getElementById("ui").offsetHeight||108;
 }
-resize();
-window.addEventListener("resize",resize);
+resize();window.addEventListener("resize",resize);
 function TS(){return Math.floor((H()-HEADER_H-UI_H)/MAP_H);}
 function OX(){return Math.floor((W()-MAP_W*TS())/2);}
 function OT(){return HEADER_H;}
@@ -168,21 +167,66 @@ function initTerrain(){
     for(let x=0;x<MAP_W;x++){tr.push(T_PLAINS);mo.push(0);fg.push(false);}
     terrain.push(tr);mapOwn.push(mo);fog.push(fg);
   }
-  const mGroups=[{cx:4,cy:10,r:3},{cx:6,cy:13,r:2},{cx:15,cy:8,r:2},{cx:3,cy:20,r:2},{cx:16,cy:22,r:3},{cx:14,cy:25,r:2}];
-  for(let m of mGroups){
-    for(let dy=-m.r;dy<=m.r;dy++)for(let dx=-m.r;dx<=m.r;dx++)
-      if(Math.hypot(dx,dy)<=m.r){let nx=m.cx+dx,ny=m.cy+dy;if(inM(nx,ny))terrain[ny][nx]=T_MOUNTAIN;}
+
+  // ── RANDOM MAP GENERATION ─────────────────────────
+  // Mountains: 4-7 random clusters, mirrored vertically so both sides are fair
+  let numM=4+Math.floor(Math.random()*4);
+  for(let i=0;i<numM;i++){
+    let cx=2+Math.floor(Math.random()*(MAP_W-4));
+    // Place in top half; mirror to bottom half
+    let cy=9+Math.floor(Math.random()*(MAP_H/2-10));
+    let r=1+Math.floor(Math.random()*2.5);
+    // Top half cluster
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)
+      if(Math.hypot(dx,dy)<=r){let nx=cx+dx,ny=cy+dy;if(inM(nx,ny))terrain[ny][nx]=T_MOUNTAIN;}
+    // Mirror: bottom half cluster (symmetric y)
+    let mcy=MAP_H-1-cy;
+    for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)
+      if(Math.hypot(dx,dy)<=r){let nx=cx+dx,ny=mcy+dy;if(inM(nx,ny))terrain[ny][nx]=T_MOUNTAIN;}
   }
-  let rx=7,ry=1;
-  for(let i=0;i<20;i++){if(inM(rx,ry))terrain[ry][rx]=T_RIVER;ry++;rx+=Math.sin(i*.9)>.3?1:Math.sin(i*.9)<-.3?-1:0;rx=clamp(rx,1,MAP_W-2);}
-  rx=12;ry=14;
-  for(let i=0;i<18;i++){if(inM(rx,ry))terrain[ry][rx]=T_RIVER;ry++;rx+=Math.cos(i*1.1)>.3?1:Math.cos(i*1.1)<-.3?-1:0;rx=clamp(rx,1,MAP_W-2);}
-  const fGroups=[{cx:12,cy:7,r:2},{cx:3,cy:26,r:2},{cx:17,cy:29,r:2},{cx:10,cy:18,r:2}];
-  for(let f of fGroups){
-    for(let dy=-f.r;dy<=f.r;dy++)for(let dx=-f.r;dx<=f.r;dx++)
-      if(Math.hypot(dx,dy)<=f.r){let nx=f.cx+dx,ny=f.cy+dy;if(inM(nx,ny)&&terrain[ny][nx]===T_PLAINS)terrain[ny][nx]=T_FOREST;}
+
+  // Rivers: 1-3 rivers snaking from top to bottom at random x positions
+  let numR=1+Math.floor(Math.random()*3);
+  let usedRx=[];
+  for(let i=0;i<numR;i++){
+    // Pick an x that isn't too close to existing rivers or map edges
+    let attempts=0,rx;
+    do{rx=3+Math.floor(Math.random()*(MAP_W-6));attempts++;}
+    while(usedRx.some(u=>Math.abs(u-rx)<4)&&attempts<20);
+    usedRx.push(rx);
+    let freq=0.5+Math.random()*0.7; // how wiggly
+    let phase=Math.random()*Math.PI*2;
+    for(let ry=1;ry<MAP_H-1;ry++){
+      if(inM(rx,ry))terrain[ry][rx]=T_RIVER;
+      // Occasionally widen river by 1 tile
+      if(Math.random()<0.3){let nx=rx+(Math.random()<0.5?1:-1);if(inM(nx,ry))terrain[ry][nx]=T_RIVER;}
+      rx+=Math.sin(ry*freq+phase)>0.45?1:Math.sin(ry*freq+phase)<-0.45?-1:0;
+      rx=clamp(rx,2,MAP_W-3);
+    }
   }
-  for(let x=0;x<MAP_W;x++){let y=Math.floor(MAP_H/2);if(terrain[y][x]===T_PLAINS)terrain[y][x]=T_DESERT;if(terrain[y-1]&&terrain[y-1][x]===T_PLAINS)terrain[y-1][x]=T_DESERT;}
+
+  // Forests: 4-8 random patches, scattered across mid-map
+  let numF=4+Math.floor(Math.random()*5);
+  for(let i=0;i<numF;i++){
+    let fx=1+Math.floor(Math.random()*(MAP_W-2));
+    let fy=6+Math.floor(Math.random()*(MAP_H-12));
+    let fr=1+Math.floor(Math.random()*2);
+    for(let dy=-fr;dy<=fr;dy++)for(let dx=-fr;dx<=fr;dx++)
+      if(Math.hypot(dx,dy)<=fr){let nx=fx+dx,ny=fy+dy;if(inM(nx,ny)&&terrain[ny][nx]===T_PLAINS)terrain[ny][nx]=T_FOREST;}
+  }
+
+  // Desert: a random diagonal or horizontal band across the mid-map
+  let dCenter=Math.floor(MAP_H/2)+Math.floor((Math.random()-.5)*4);
+  let dAngle=(Math.random()-.5)*0.4; // slight diagonal
+  for(let x=0;x<MAP_W;x++){
+    let dy=Math.floor(x*dAngle);
+    for(let offset=-1;offset<=1;offset++){
+      let y=dCenter+dy+offset;
+      if(inM(x,y)&&terrain[y][x]===T_PLAINS)terrain[y][x]=T_DESERT;
+    }
+  }
+
+  // Starting territories: bottom 8 = player, top 8 = enemy
   for(let y=MAP_H-8;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){mapOwn[y][x]=1;fog[y][x]=true;}
   for(let y=0;y<8;y++)for(let x=0;x<MAP_W;x++){mapOwn[y][x]=-1;fog[y][x]=true;}
 }
@@ -195,47 +239,77 @@ function tileToWorld(tx,ty){return{wx:OX()+tx*TS()+TS()/2,wy:OT()+ty*TS()+TS()/2
 // BUILDINGS
 // ═══════════════════════════════════════════════════
 const BTYPES={
-  barracks:  {emoji:"🏯",hp:80, name:"Barracks", effect:"Shelter + gold boost"},
-  watchtower:{emoji:"🗼",hp:50, name:"Watchtower",effect:"Reveals 5-tile fog"},
-  fortress:  {emoji:"🏰",hp:150,name:"Fortress",  effect:"Heavy shelter -55% dmg"},
-  armory:    {emoji:"⚙️", hp:60, name:"Armory",    effect:"+25% attack nearby"},
-  goldmine:  {emoji:"⛏️", hp:40, name:"Gold Mine", effect:"+2 gold/sec if manned"},
+  barracks:  {emoji:"🏯",hp:100,name:"Barracks", effect:"Shelter + gold +0.3/s"},
+  watchtower:{emoji:"🗼",hp:60, name:"Watchtower",effect:"Reveals 6-tile fog"},
+  fortress:  {emoji:"🏰",hp:180,name:"Fortress",  effect:"Heavy shelter -60% dmg"},
+  armory:    {emoji:"⚙️", hp:70, name:"Armory",    effect:"+30% attack nearby"},
+  goldmine:  {emoji:"⛏️", hp:50, name:"Gold Mine", effect:"+3 gold/s if manned"},
 };
 function initBuildings(){
   buildings=[];
   const bkeys=Object.keys(BTYPES);
   let tries=0;
-  while(buildings.length<13&&tries<300){
+  // Ensure buildings are spread across the map, not just clumped
+  while(buildings.length<16&&tries<400){
     tries++;
     let bx=1+Math.floor(Math.random()*(MAP_W-2));
-    let by=4+Math.floor(Math.random()*(MAP_H-10));
+    // Bias placement toward mid-map (rows 8-28) for strategic contestation
+    let by=8+Math.floor(Math.random()*(MAP_H-16));
     if(terrain[by][bx]===T_RIVER||terrain[by][bx]===T_MOUNTAIN)continue;
-    if(buildings.some(b=>b.x===bx&&b.y===by))continue;
+    // Enforce minimum distance between buildings
+    if(buildings.some(b=>Math.hypot(b.x-bx,b.y-by)<3))continue;
     let t=bkeys[Math.floor(Math.random()*bkeys.length)];
-    buildings.push({x:bx,y:by,type:t,hp:BTYPES[t].hp,maxHp:BTYPES[t].hp,team:0});
+    buildings.push({x:bx,y:by,type:t,hp:BTYPES[t].hp,maxHp:BTYPES[t].hp,team:0,destroyed:false});
   }
 }
 
 // ═══════════════════════════════════════════════════
 // TROOP DEFINITIONS
 // ═══════════════════════════════════════════════════
+// airUnit: can only be targeted by antiAir units
+// antiAir: can target air units
+// groundOnly: cannot attack air
+// captureRadius: tile radius around each member that gets captured (default 1)
+// Range philosophy:
+//   Melee (berserker, shield): 55px — must close distance, high risk
+//   Short (cavalry, engineer, medic): 70-80px — skirmish range
+//   Standard (soldier, squad, para, tank): 85-110px — rifle range
+//   Medium (mortar, rocket, sniper): 170-220px — fire support
+//   Long (artillery): 250px — siege
 const TROOPS=[
-  {id:"soldier",   name:"Soldier",    emoji:"🪖",cost:1, count:1,hp:12,range:110,damage:4, speed:.65,desc:"Basic infantry"},
-  {id:"squad",     name:"Squad",      emoji:"👥",cost:4, count:5,hp:8, range:110,damage:3, speed:.55,desc:"5-man fire squad"},
-  {id:"sniper",    name:"Sniper",     emoji:"🎯",cost:3, count:1,hp:7, range:250,damage:12,speed:.45,desc:"Long-range precision"},
-  {id:"tank",      name:"Tank",       emoji:"🚛",cost:9, count:1,hp:90,range:130,damage:16,speed:.30,desc:"Heavy armored unit"},
-  {id:"mortar",    name:"Mortar",     emoji:"💣",cost:8, count:1,hp:14,range:200,damage:18,speed:.20,desc:"Area bombardment"},
-  {id:"cavalry",   name:"Cavalry",    emoji:"🏇",cost:5, count:2,hp:18,range:90, damage:9, speed:1.15,desc:"Fast flanking unit"},
-  {id:"medic",     name:"Medic",      emoji:"💉",cost:4, count:1,hp:10,range:80, damage:0, speed:.55,desc:"Heals nearby allies"},
-  {id:"engineer",  name:"Engineer",   emoji:"🔧",cost:3, count:1,hp:8, range:80, damage:2, speed:.50,desc:"Repairs buildings"},
-  {id:"rocket",    name:"Rocket",     emoji:"🚀",cost:7, count:1,hp:14,range:220,damage:22,speed:.35,desc:"Explosive anti-tank"},
-  {id:"shield",    name:"Shield Wall",emoji:"🛡️",cost:5, count:3,hp:38,range:70, damage:3, speed:.30,desc:"Tanky defensive line"},
-  {id:"berserker", name:"Berserker",  emoji:"🪓",cost:6, count:2,hp:24,range:65, damage:20,speed:.95,desc:"Melee fury"},
-  {id:"artillery", name:"Artillery",  emoji:"🔫",cost:10,count:1,hp:20,range:270,damage:24,speed:.15,desc:"Max-range cannon"},
-  {id:"paratrooper",name:"Para",      emoji:"🪂",cost:6, count:3,hp:12,range:110,damage:5, speed:.60,desc:"Drop anywhere"},
-  {id:"spy",       name:"Scout Plane",emoji:"🛩️",cost:3, count:0,hp:0, range:0,  damage:0, speed:0,  desc:"Reveals enemy fog"},
-  {id:"airstrike", name:"Airstrike",  emoji:"✈️",cost:12,count:0,hp:0, range:0,  damage:0, speed:0,  desc:"Drag to bomb a line"},
-  {id:"mine",      name:"Land Mine",  emoji:"⚠️",cost:2, count:0,hp:0, range:0,  damage:0, speed:0,  desc:"Place near your troops"},
+  // cost:1 — cheap scout / territory grabber, dies easily
+  {id:"soldier",  name:"Soldier",   emoji:"🪖",cost:1, count:2,hp:9, range:85, damage:3,  speed:.36,desc:"×2 scouts, capture fast",     groundOnly:true, captureRadius:2},
+  // cost:3 — glass cannon, punished hard if enemies close in
+  {id:"sniper",   name:"Sniper",    emoji:"🎯",cost:3, count:1,hp:7, range:220,damage:11, speed:.25,desc:"Long range, fragile",           groundOnly:true, captureRadius:1},
+  // cost:3 — utility builder, very short combat range
+  {id:"engineer", name:"Engineer",  emoji:"🔧",cost:3, count:1,hp:9, range:72, damage:2,  speed:.30,desc:"Repairs buildings",             groundOnly:true, captureRadius:2},
+  // cost:4 — backbone squad, standard rifle range
+  {id:"squad",    name:"Squad",     emoji:"👥",cost:4, count:4,hp:9, range:95, damage:3,  speed:.30,desc:"4-man balanced fire team",      groundOnly:true, captureRadius:1},
+  // cost:4 — support, needs to be close to heal
+  {id:"medic",    name:"Medic",     emoji:"💉",cost:4, count:1,hp:11,range:75, damage:0,  speed:.30,desc:"Heals nearby allies",           groundOnly:true, captureRadius:1},
+  // cost:5 — fast flanker, short melee-ish range but huge speed
+  {id:"cavalry",  name:"Cavalry",   emoji:"🏇",cost:5, count:2,hp:16,range:75, damage:8,  speed:.60,desc:"Fast flanking, wide captures",  groundOnly:true, captureRadius:3},
+  // cost:5 — defensive wall, point-blank only, very high hp per cost
+  {id:"shield",   name:"Shield",    emoji:"🛡️",cost:5, count:2,hp:32,range:55, damage:4,  speed:.16,desc:"Tanky wall, holds ground",      groundOnly:true, captureRadius:1},
+  // cost:6 — berserk melee fury, ignores terrain def, must close in
+  {id:"berserker",name:"Berserker", emoji:"🪓",cost:6, count:2,hp:22,range:58, damage:17, speed:.50,desc:"Melee fury, ignores defence",   groundOnly:true, captureRadius:1},
+  // cost:6 — surprise deep-strike, standard range
+  {id:"para",     name:"Para",      emoji:"🪂",cost:6, count:3,hp:11,range:95, damage:5,  speed:.33,desc:"Drop anywhere on map",          groundOnly:true, captureRadius:1},
+  // cost:7 — anti-armour, medium range, can hit air
+  {id:"rocket",   name:"Rocket",    emoji:"🚀",cost:7, count:1,hp:13,range:190,damage:20, speed:.19,desc:"Anti-tank, hits air",           antiAir:true,    captureRadius:1},
+  // cost:8 — area denial, lobbed arc, medium range, can't hit air
+  {id:"mortar",   name:"Mortar",    emoji:"💣",cost:8, count:1,hp:14,range:175,damage:16, speed:.11,desc:"Area blast, can't hit air",     groundOnly:true, captureRadius:1},
+  // cost:8 — heavy armour, short cannon range (tank not sniper)
+  {id:"tank",     name:"Tank",      emoji:"🚛",cost:8, count:1,hp:85,range:110,damage:15, speed:.18,desc:"Heavy armour, wide capture",    groundOnly:true, captureRadius:3},
+  // cost:9 — max-range siege cannon, hits air
+  {id:"artillery",name:"Artillery", emoji:"🔫",cost:9, count:1,hp:18,range:250,damage:22, speed:.08,desc:"Max range, hits air",           antiAir:true,    captureRadius:1},
+  // cost:4 — AA specialist, medium-short range, fast fire
+  {id:"aa",       name:"AA Gun",    emoji:"🔭",cost:4, count:1,hp:14,range:170,damage:14, speed:.13,desc:"Anti-air specialist",           antiAir:true,    captureRadius:1},
+  // --- special cards ---
+  {id:"spy",      name:"Scout Plane",emoji:"🛩️",cost:3, count:0,hp:0, range:0,  damage:0,  speed:0,  desc:"Reveals enemy fog",           airUnit:true},
+  // Airstrike: expensive (cost 16), rare in deck, but devastatingly lethal in radius
+  {id:"airstrike",name:"Airstrike", emoji:"✈️",cost:16,count:0,hp:0, range:0,  damage:0,  speed:0,  desc:"Costly — wipes a line clean",  airUnit:true},
+  {id:"mine",     name:"Land Mine", emoji:"⚠️",cost:2, count:0,hp:0, range:0,  damage:0,  speed:0,  desc:"Place near your troops"},
 ];
 const TMAP={};for(let t of TROOPS)TMAP[t.id]=t;
 
@@ -244,10 +318,15 @@ const TMAP={};for(let t of TROOPS)TMAP[t.id]=t;
 // ═══════════════════════════════════════════════════
 let deck=[],hand=[],offhandCard=null,deckIdx=0;
 function buildDeck(){
+  // Exclude special cards from base pool; weight cheaper cards higher
   let pool=TROOPS.filter(t=>!["spy","airstrike","mine"].includes(t.id));
   deck=[];
-  for(let t of pool){let n=t.cost<=3?3:t.cost<=6?2:1;for(let i=0;i<n;i++)deck.push({...t});}
-  deck.push({...TMAP.spy},{...TMAP.airstrike},{...TMAP.mine},{...TMAP.airstrike});
+  for(let t of pool){
+    let n=t.cost<=3?4:t.cost<=5?3:t.cost<=7?2:1;
+    for(let i=0;i<n;i++)deck.push({...t});
+  }
+  // Add specials: 2 spy, 1 airstrike (rare+expensive), 3 mine
+  deck.push({...TMAP.spy},{...TMAP.spy},{...TMAP.airstrike},{...TMAP.mine},{...TMAP.mine},{...TMAP.mine});
   shuffleDeck();
   hand=[];offhandCard=null;deckIdx=0;
   for(let i=0;i<3;i++)drawCard();
@@ -269,17 +348,14 @@ function storeOffhand(i){
   if(offhandCard)return false;
   offhandCard=hand[i];hand.splice(i,1);drawCard();renderHand();return true;
 }
-
-// [#5] Cycle hand: discard all 3, draw fresh 3
 function cycleHand(){
   hand=[];
   if(deckIdx+3>deck.length){shuffleDeck();deckIdx=0;}
   for(let i=0;i<3;i++)drawCard();
   placing=null;placingIdx=-1;
   renderHand();updateBanner();
-  flashBanner("🔄 New hand drawn!",1200);
+  flashBanner("🔄 New hand!",1000);
 }
-
 function renderHand(){
   for(let i=0;i<3;i++){
     let el=document.getElementById("c"+i);
@@ -287,139 +363,120 @@ function renderHand(){
     if(!card){el.innerHTML="";el.className="tc";el.style.opacity="0.15";el.style.pointerEvents="none";continue;}
     el.style.pointerEvents="";
     let isActive=placing&&placingIdx===i;
-    el.className="tc"+(isActive?" active":"");
+    let isAir=card.airUnit;
+    el.className="tc"+(isActive?" active":"")+(isAir?" air-card":"");
     el.style.opacity=gold<card.cost?"0.35":"1";
     el.innerHTML=`<div class="ce">${card.emoji}</div><div class="cn">${card.name}</div><div class="cc">💰${card.cost}</div><div class="cd">${card.desc}</div>`;
   }
   let oh=document.getElementById("offhand");
-  let oe=document.getElementById("oe");
-  let on2=document.getElementById("on");
-  if(offhandCard){oh.classList.add("has");oe.textContent=offhandCard.emoji;on2.textContent=offhandCard.name;}
-  else{oh.classList.remove("has");oe.textContent="🤚";on2.textContent="";}
+  if(offhandCard){oh.classList.add("has");document.getElementById("oe").textContent=offhandCard.emoji;document.getElementById("on").textContent=offhandCard.name;}
+  else{oh.classList.remove("has");document.getElementById("oe").textContent="🤚";document.getElementById("on").textContent="";}
   document.getElementById("deckinfo").textContent="🃏 "+(deck.length-deckIdx)+" left";
 }
 
 // ═══════════════════════════════════════════════════
-// [#4] DRAG CARD TO OFFHAND
+// DRAG CARD TO OFFHAND
 // ═══════════════════════════════════════════════════
 let cardDrag={active:false,idx:-1,card:null,startX:0,startY:0};
 const ghost=document.getElementById("dragGhost");
-
-function startCardDrag(idx,clientX,clientY){
+function startCardDrag(idx,cx,cy){
   if(!hand[idx])return;
-  cardDrag={active:true,idx,card:hand[idx],startX:clientX,startY:clientY};
-  ghost.innerHTML=`<div style="font-size:24px">${hand[idx].emoji}</div><div style="font-size:8px;font-weight:700">${hand[idx].name}</div><div style="font-size:11px;color:#ffd54f">💰${hand[idx].cost}</div>`;
-  ghost.style.display="flex";
-  ghost.style.left=(clientX-34)+"px";
-  ghost.style.top=(clientY-43)+"px";
+  cardDrag={active:true,idx,card:hand[idx],startX:cx,startY:cy};
+  ghost.innerHTML=`<div style="font-size:22px">${hand[idx].emoji}</div><div style="font-size:8px;font-weight:700">${hand[idx].name}</div><div style="font-size:11px;color:#ffd54f">💰${hand[idx].cost}</div>`;
+  ghost.style.display="flex";ghost.style.left=(cx-32)+"px";ghost.style.top=(cy-41)+"px";
   document.getElementById("c"+idx).classList.add("dragging");
 }
-function moveCardDrag(clientX,clientY){
+function moveCardDrag(cx,cy){
   if(!cardDrag.active)return;
-  ghost.style.left=(clientX-34)+"px";
-  ghost.style.top=(clientY-43)+"px";
-  // Highlight offhand if hovering over it
-  let oh=document.getElementById("offhand");
-  let r=oh.getBoundingClientRect();
-  let over=clientX>=r.left&&clientX<=r.right&&clientY>=r.top&&clientY<=r.bottom;
-  oh.classList.toggle("dropready",over&&!offhandCard);
+  ghost.style.left=(cx-32)+"px";ghost.style.top=(cy-41)+"px";
+  let r=document.getElementById("offhand").getBoundingClientRect();
+  document.getElementById("offhand").classList.toggle("dropready",cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom&&!offhandCard);
 }
-function endCardDrag(clientX,clientY){
+function endCardDrag(cx,cy){
   if(!cardDrag.active)return;
   ghost.style.display="none";
   document.getElementById("c"+cardDrag.idx).classList.remove("dragging");
   document.getElementById("offhand").classList.remove("dropready");
-  let oh=document.getElementById("offhand");
-  let r=oh.getBoundingClientRect();
-  let over=clientX>=r.left&&clientX<=r.right&&clientY>=r.top&&clientY<=r.bottom;
-  if(over&&!offhandCard){
+  let r=document.getElementById("offhand").getBoundingClientRect();
+  if(cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom&&!offhandCard){
     storeOffhand(cardDrag.idx);
-    flashBanner("📦 Stored "+cardDrag.card.name+" in offhand",1500);
+    flashBanner("📦 Stored in offhand",1200);
   }
-  // else card snaps back (no-op, DOM unchanged)
   cardDrag.active=false;
 }
 
 // ═══════════════════════════════════════════════════
-// [#1][#2][#3] CARD & MAP INPUT
+// INPUT STATE
 // ═══════════════════════════════════════════════════
 let placing=null,placingIdx=-1;
 let selected=null,dragStart=null,lastPointer=null;
+// Rally point: all new player squads auto-march here after placement
+let rallyPoint=null;
+let rallyMode=false; // next tap on map sets rally
+// Hold-swirl state
+const SWIRL={active:false,x:0,y:0,candidates:[],cycleIdx:0,
+  zoneVisible:false,lastAngle:0,totalRotation:0,degreesPerStep:45,cancelled:false};
+const SWIRL_RADIUS=80,SWIRL_HOLD_MS=350;
 
-// [#3] Hold-and-swirl state
-const SWIRL={
-  active:false,     // gesture in progress
-  x:0,y:0,          // finger anchor
-  candidates:[],    // friendly squads in zone
-  cycleIdx:0,       // which candidate is highlighted
-  downTime:0,       // when finger went down
-  zoneVisible:false,// show the 80px circle
-  lastAngle:0,      // for cycle detection
-  totalRotation:0,  // accumulated angle for cycling
-  degreesPerStep:45,// rotate this much to advance one candidate
-  cancelled:false,
-};
-const SWIRL_RADIUS=80;
-const SWIRL_HOLD_MS=350;
-
-// Per-card listeners
+// ═══════════════════════════════════════════════════
+// CARD LISTENERS
+// ═══════════════════════════════════════════════════
 for(let i=0;i<3;i++){
   (()=>{
-    let idx=i;
-    let el=document.getElementById("c"+i);
+    let idx=i,el=document.getElementById("c"+i);
     let holdT=null,didHold=false,dragMoved=false;
     el.addEventListener("pointerdown",e=>{
-      e.stopPropagation();
-      didHold=false;dragMoved=false;
-      let {clientX,clientY}=e.touches?e.touches[0]:e;
-      holdT=setTimeout(()=>{didHold=true;let c=hand[idx];if(c)showPreview(c,e);},400);
-      startCardDrag(idx,clientX,clientY);
+      e.stopPropagation();didHold=false;dragMoved=false;
+      let cx=e.clientX,cy=e.clientY;
+      holdT=setTimeout(()=>{didHold=true;let c=hand[idx];if(c)showPreview(c);},400);
+      startCardDrag(idx,cx,cy);
     });
     el.addEventListener("pointermove",e=>{
       e.stopPropagation();
-      let {clientX,clientY}=e.touches?e.touches[0]:e;
-      let dx=clientX-cardDrag.startX,dy=clientY-cardDrag.startY;
-      if(Math.hypot(dx,dy)>8){dragMoved=true;clearTimeout(holdT);}
-      moveCardDrag(clientX,clientY);
+      if(Math.hypot(e.clientX-cardDrag.startX,e.clientY-cardDrag.startY)>8){dragMoved=true;clearTimeout(holdT);}
+      moveCardDrag(e.clientX,e.clientY);
     });
     el.addEventListener("pointerup",e=>{
-      e.stopPropagation();
-      clearTimeout(holdT);hidePreview();
-      let {clientX,clientY}=e.changedTouches?e.changedTouches[0]:e;
-      endCardDrag(clientX,clientY);
+      e.stopPropagation();clearTimeout(holdT);hidePreview();
+      endCardDrag(e.clientX,e.clientY);
       if(didHold||dragMoved)return;
-      // Short tap = select card
       let card=hand[idx];if(!card)return;
       if(placing&&placingIdx===idx){placing=null;placingIdx=-1;renderHand();updateBanner();return;}
-      if(gold<card.cost){flashBanner("❌ Need 💰"+card.cost+" — have "+Math.floor(gold),1500);return;}
+      if(gold<card.cost){flashBanner("❌ Need 💰"+card.cost,1200);return;}
       placing=card;placingIdx=idx;selected=null;dragStart=null;
       renderHand();updateBanner();
     });
-    el.addEventListener("pointerleave",e=>{
-      clearTimeout(holdT);hidePreview();
-      let {clientX,clientY}=e.changedTouches?e.changedTouches[0]:e;
-      moveCardDrag(clientX,clientY);
-    });
+    el.addEventListener("pointerleave",e=>{clearTimeout(holdT);hidePreview();moveCardDrag(e.clientX,e.clientY);});
     el.addEventListener("contextmenu",e=>{
       e.preventDefault();e.stopPropagation();
-      if(hand[idx]&&!offhandCard){let n=hand[idx].name;storeOffhand(idx);flashBanner("📦 Stored "+n+" in offhand",1800);}
+      if(hand[idx]&&!offhandCard){storeOffhand(idx);flashBanner("📦 Stored "+hand[idx]?.name||"card"+" in offhand",1500);}
     });
   })();
 }
-
-// Offhand slot input
 document.getElementById("offhand").addEventListener("pointerdown",e=>e.stopPropagation());
 document.getElementById("offhand").addEventListener("pointerup",e=>{
   e.stopPropagation();
   if(offhandCard){
-    if(gold<offhandCard.cost){flashBanner("❌ Not enough gold!",1500);return;}
+    if(gold<offhandCard.cost){flashBanner("❌ Not enough gold!",1200);return;}
     placing=offhandCard;placingIdx=-99;offhandCard=null;renderHand();updateBanner();
   }
 });
-
-// [#5] Cycle hand button
 document.getElementById("cycleBtn").addEventListener("pointerdown",e=>e.stopPropagation());
 document.getElementById("cycleBtn").addEventListener("pointerup",e=>{e.stopPropagation();cycleHand();});
+// Rally button: tap activates mode, then tap on map sends all nearby squads there
+document.getElementById("rallyBtn").addEventListener("pointerdown",e=>e.stopPropagation());
+document.getElementById("rallyBtn").addEventListener("pointerup",e=>{
+  e.stopPropagation();
+  rallyMode=!rallyMode;
+  document.getElementById("rallyBtn").classList.toggle("active-rally",rallyMode);
+  if(rallyMode)flashBanner("📍 Tap map — rallies squads within 10 tiles",2000);
+  else{
+    rallyPoint=null;
+    document.getElementById("rallyBtn").classList.remove("active-rally");
+    document.getElementById("rallyIndicator").innerHTML="📍<br>No rally";
+    flashBanner("Rally cleared",700);
+  }
+});
 
 function getPos(e){
   let r=canvas.getBoundingClientRect();
@@ -427,82 +484,69 @@ function getPos(e){
   return{x:src.clientX-r.left,y:src.clientY-r.top};
 }
 
-// ─── Canvas pointer events ─────────────────────────
+// ═══════════════════════════════════════════════════
+// CANVAS POINTER EVENTS
+// ═══════════════════════════════════════════════════
 canvas.addEventListener("pointerdown",e=>{
   e.preventDefault();
   let p=getPos(e);lastPointer=p;
-
-  // Airstrike drag
+  // Rally mode: tap sends all friendly squads within 10 tiles to this point
+  if(rallyMode){
+    let{tx,ty}=worldToTile(p.x,p.y);
+    if(inM(tx,ty)){
+      rallyPoint={x:p.x,y:p.y};
+      rallyMode=false;
+      document.getElementById("rallyBtn").classList.remove("active-rally");
+      // Send all player squads within 10-tile radius
+      const RALLY_TILE_R=10*TS(); // 10 tiles in pixels
+      let rallied=0;
+      for(let sq of squads){
+        if(sq.team!=="player"||!sq.members.length)continue;
+        let sc=sq.center();
+        if(Math.hypot(sc.x-p.x,sc.y-p.y)<=RALLY_TILE_R){
+          sq.setOrder(p.x,p.y);
+          rallied++;
+        }
+      }
+      let{tx:rtx,ty:rty}=worldToTile(p.x,p.y);
+      document.getElementById("rallyIndicator").innerHTML=`📍<br>${rtx},${rty}`;
+      flashBanner(rallied>0?`📍 ${rallied} squad${rallied>1?"s":""} rallying!`:"📍 Rally set (spawn default)",1400);
+      if(rallied>0)announce(`Rally. ${rallied} unit${rallied>1?"s":""} moving.`);
+      else announce("Rally point. Marked.");
+      return;
+    }
+  }
   if(placing&&placing.id==="airstrike"){dragStart=p;return;}
-
-  // Skip swirl gesture if placing a card
   if(!placing){
-    // [#3] BEGIN hold-swirl detection
     SWIRL.active=false;SWIRL.cancelled=false;SWIRL.zoneVisible=false;
-    SWIRL.x=p.x;SWIRL.y=p.y;SWIRL.downTime=Date.now();
-    SWIRL.candidates=[];SWIRL.cycleIdx=0;SWIRL.totalRotation=0;SWIRL.lastAngle=0;
-
-    // [#2] Tap priority: if a squad is selected, first tap sets POI unless inside 60px ring
+    SWIRL.x=p.x;SWIRL.y=p.y;SWIRL.candidates=[];SWIRL.cycleIdx=0;
+    SWIRL.totalRotation=0;SWIRL.lastAngle=0;
+    // Tap priority: if selected, outside 60px = set new POI immediately
     if(selected&&selected.team==="player"&&selected.members.length){
       let c=selected.center();
-      let dist=Math.hypot(c.x-p.x,c.y-p.y);
-      if(dist>60){
-        // Outside selected squad radius → set new POI immediately
-        selected.poi={x:p.x,y:p.y};
-        updateBanner();
-        return;
-      }
-      // Inside radius → allow swirl detection to possibly cycle, but don't reset POI yet
+      if(Math.hypot(c.x-p.x,c.y-p.y)>60){selected.setOrder(p.x,p.y);updateBanner();return;}
     }
-
-    // Start swirl timer
     SWIRL._timer=setTimeout(()=>{
       if(SWIRL.cancelled)return;
-      // Collect candidate squads within SWIRL_RADIUS
-      let cands=squads.filter(s=>s.team==="player"&&s.members.length);
-      // If selected squad exists, prefer squads near it first
-      if(selected&&selected.team==="player"&&selected.members.length){
-        let sc=selected.center();
-        cands=cands.sort((a,b)=>{
-          let da=Math.hypot(a.center().x-sc.x,a.center().y-sc.y);
-          let db=Math.hypot(b.center().x-sc.x,b.center().y-sc.y);
-          return da-db;
-        });
-      }
-      cands=cands.filter(s=>{
-        let c=s.center();
-        return Math.hypot(c.x-SWIRL.x,c.y-SWIRL.y)<SWIRL_RADIUS;
-      });
-      if(!cands.length)return; // no squads in zone, don't activate
-      SWIRL.active=true;SWIRL.zoneVisible=true;
-      SWIRL.candidates=cands;
-      // Start on nearest or currently selected
-      let startIdx=0;
-      if(selected){let si=cands.indexOf(selected);if(si>=0)startIdx=si;}
-      SWIRL.cycleIdx=startIdx;
+      let cands=squads.filter(s=>s.team==="player"&&s.members.length&&
+        Math.hypot(s.center().x-SWIRL.x,s.center().y-SWIRL.y)<SWIRL_RADIUS);
+      if(!cands.length)return;
+      if(selected){let si=cands.indexOf(selected);if(si>=0){let tmp=cands[si];cands.splice(si,1);cands.unshift(tmp);}}
+      SWIRL.active=true;SWIRL.zoneVisible=true;SWIRL.candidates=cands;SWIRL.cycleIdx=0;
     },SWIRL_HOLD_MS);
-    return;
   }
 });
-
 canvas.addEventListener("pointermove",e=>{
   e.preventDefault();
   let p=getPos(e);lastPointer=p;
-
-  // [#3] Swirl cycle logic
   if(SWIRL.active&&SWIRL.zoneVisible){
     let dx=p.x-SWIRL.x,dy=p.y-SWIRL.y;
-    let dist=Math.hypot(dx,dy);
-    // If finger leaves the zone circle, cancel
-    if(dist>SWIRL_RADIUS+20){SWIRL.active=false;SWIRL.cancelled=true;SWIRL.zoneVisible=false;return;}
-    // Track angle for cycle detection
+    if(Math.hypot(dx,dy)>SWIRL_RADIUS+20){SWIRL.active=false;SWIRL.cancelled=true;SWIRL.zoneVisible=false;return;}
     let angle=Math.atan2(dy,dx)*(180/Math.PI);
     if(SWIRL.lastAngle!==0&&SWIRL.candidates.length>1){
       let delta=angle-SWIRL.lastAngle;
-      // Normalize to [-180,180]
       if(delta>180)delta-=360;if(delta<-180)delta+=360;
       SWIRL.totalRotation+=delta;
-      // Advance cycle when enough rotation accumulated
       let steps=Math.floor(Math.abs(SWIRL.totalRotation)/SWIRL.degreesPerStep);
       if(steps>0){
         let dir=SWIRL.totalRotation>0?1:-1;
@@ -510,101 +554,102 @@ canvas.addEventListener("pointermove",e=>{
         SWIRL.totalRotation-=dir*steps*SWIRL.degreesPerStep;
       }
     }
-    SWIRL.lastAngle=angle;
-    return;
+    SWIRL.lastAngle=angle;return;
   }
-
-  // [#3] If hold timer running but finger moved far, cancel it
-  if(!SWIRL.active&&SWIRL._timer){
-    let dist=Math.hypot(p.x-SWIRL.x,p.y-SWIRL.y);
-    if(dist>15){clearTimeout(SWIRL._timer);SWIRL.cancelled=true;}
+  if(!SWIRL.active&&SWIRL._timer&&Math.hypot(p.x-SWIRL.x,p.y-SWIRL.y)>15){
+    clearTimeout(SWIRL._timer);SWIRL.cancelled=true;
   }
-
   if(placing)showInlinePrev(p);
 });
-
 canvas.addEventListener("pointerup",e=>{
   e.preventDefault();
-  let p=getPos(e);
-  clearTimeout(SWIRL._timer);
-  hideInlinePrev();
-
-  // [#3] Swirl release: commit highlighted candidate as selected
+  let p=getPos(e);clearTimeout(SWIRL._timer);hideInlinePrev();
   if(SWIRL.active&&SWIRL.zoneVisible){
     SWIRL.zoneVisible=false;SWIRL.active=false;
-    if(SWIRL.candidates.length){
-      selected=SWIRL.candidates[SWIRL.cycleIdx];
-      updateBanner();
-    }
+    if(SWIRL.candidates.length){selected=SWIRL.candidates[SWIRL.cycleIdx];updateBanner();}
     return;
   }
   SWIRL.active=false;SWIRL.zoneVisible=false;
-
-  // Airstrike drag release
+  // Airstrike drag
   if(dragStart&&placing&&placing.id==="airstrike"){
     if(Math.hypot(p.x-dragStart.x,p.y-dragStart.y)>30&&gold>=placing.cost){
       gold-=placing.cost;consumeCard(placingIdx);doAirstrike(dragStart,p);
+      announce("Airstrike. Inbound.");
     }
     dragStart=null;placing=null;placingIdx=-1;renderHand();updateBanner();return;
   }
-
   if(placing){
     let{tx,ty}=worldToTile(p.x,p.y);
     if(!inM(tx,ty))return;
-    if(gold<placing.cost){flashBanner("❌ Not enough gold!",1500);return;}
+    if(gold<placing.cost){flashBanner("❌ Not enough gold!",1200);return;}
     if(placing.id==="mine"){
-      let ok=soldiers.some(s=>{
-        if(s.team!=="player"||s.hp<=0)return false;
-        let{tx:stx,ty:sty}=worldToTile(s.x,s.y);
-        return Math.hypot(stx-tx,sty-ty)<=4;
-      });
-      if(!ok){flashBanner("⚠️ Place mines within 4 tiles of your troops!",2000);return;}
+      let ok=soldiers.some(s=>{if(s.team!=="player"||s.hp<=0)return false;let{tx:stx,ty:sty}=worldToTile(s.x,s.y);return Math.hypot(stx-tx,sty-ty)<=4;});
+      if(!ok){flashBanner("⚠️ Place near your troops!",1800);return;}
+      // PLACEMENT RESTRICTION: mines only on own territory
+      if(mapOwn[ty][tx]!==1){flashBanner("❌ Own territory only!",1200);return;}
       gold-=placing.cost;consumeCard(placingIdx);
       mines.push({x:tx,y:ty,team:"player",triggered:false});
+      announce("Mine. Planted.");
       placing=null;placingIdx=-1;renderHand();updateBanner();return;
     }
     if(placing.id==="spy"){
       gold-=placing.cost;consumeCard(placingIdx);spyPlane=new SpyPlane();
+      announce("Scout plane. Airborne.");
       placing=null;placingIdx=-1;renderHand();updateBanner();return;
     }
-    if(placing.id!=="paratrooper"&&mapOwn[ty][tx]===-1){flashBanner("❌ Can't place on enemy territory!",1500);return;}
+    // PLACEMENT RESTRICTION: only on own tiles (not enemy, not neutral except para)
+    if(placing.id!=="para"&&mapOwn[ty][tx]!==1){
+      flashBanner("❌ Own territory only!",1200);return;
+    }
     gold-=placing.cost;
     let cls=consumeCard(placingIdx);
     let sq=new Squad(p.x,p.y,"player",cls);
     squads.push(sq);selected=sq;
-    placing=null;placingIdx=-1;renderHand();updateBanner();
-    return;
+    // Announce deploy — vary the line a bit for flavour
+    const deployLines={
+      soldier:"Soldiers. Deployed.",
+      sniper:"Sniper. In position.",
+      engineer:"Engineer. Forward.",
+      squad:"Squad. Moving out.",
+      medic:"Medic. On the field.",
+      cavalry:"Cavalry. Flanking.",
+      shield:"Shield wall. Holding.",
+      berserker:"Berserkers. Unleashed.",
+      para:"Paratroopers. Away.",
+      rocket:"Rocket team. Deployed.",
+      mortar:"Mortar. Set up.",
+      tank:"Armor. Rolling.",
+      artillery:"Artillery. In position.",
+      aa:"AA gun. Online.",
+    };
+    announce(deployLines[cls.id]||`${cls.name}. Deployed.`);
+    // Apply rally point if set — use setOrder so squad advances properly
+    if(rallyPoint)sq.setOrder(rallyPoint.x,rallyPoint.y);
+    placing=null;placingIdx=-1;renderHand();updateBanner();return;
   }
-
-  // [#2] No placing: handle squad selection / movement
   if(!SWIRL.cancelled){
-    // If selected squad, a quick tap outside its 60px ring already sent POI on pointerdown
-    // This handles the "select new squad" case if no current selection
     if(!selected){
       for(let s of squads){
         if(s.team!=="player"||!s.members.length)continue;
-        let c=s.center();
-        if(Math.hypot(c.x-p.x,c.y-p.y)<44){selected=s;updateBanner();return;}
+        if(Math.hypot(s.center().x-p.x,s.center().y-p.y)<44){selected=s;updateBanner();return;}
       }
     } else {
-      // Selected exists: tap inside 60px ring → try to select another squad nearby
       let sc=selected.center();
       if(Math.hypot(sc.x-p.x,sc.y-p.y)<=60){
         for(let s of squads){
           if(s.team!=="player"||s===selected||!s.members.length)continue;
-          let c=s.center();
-          if(Math.hypot(c.x-p.x,c.y-p.y)<44){selected=s;updateBanner();return;}
+          if(Math.hypot(s.center().x-p.x,s.center().y-p.y)<44){selected=s;updateBanner();return;}
         }
-        // Tap inside ring but no other squad → set POI
-        selected.poi={x:p.x,y:p.y};updateBanner();
+        selected.setOrder(p.x,p.y);updateBanner();
       }
-      // Tap outside ring → POI already set on pointerdown
     }
   }
   SWIRL.cancelled=false;
 });
 
-// Hold preview (inline, shown while holding placing mode over map)
+// ═══════════════════════════════════════════════════
+// PREVIEW / BANNER
+// ═══════════════════════════════════════════════════
 let inlinePrevTimer=null;
 function showInlinePrev(p){
   if(!placing)return;
@@ -615,38 +660,31 @@ function showInlinePrev(p){
     document.getElementById("hpn").textContent=placing.name+" 💰"+placing.cost;
     document.getElementById("hpi").textContent=`HP:${placing.hp||"-"} DMG:${placing.damage||"-"} RNG:${placing.range||"-"}`;
     el.style.display="flex";el.style.transform="";el.style.left=(p.x+14)+"px";el.style.top=(p.y-90)+"px";
-  },350);
+  },300);
 }
 function hideInlinePrev(){clearTimeout(inlinePrevTimer);document.getElementById("hprev").style.display="none";}
 function showPreview(card){
   let el=document.getElementById("hprev");
   document.getElementById("hpe").textContent=card.emoji;
   document.getElementById("hpn").textContent=card.name+" 💰"+card.cost;
-  document.getElementById("hpi").textContent=`HP:${card.hp||"-"} DMG:${card.damage||"-"} RNG:${card.range||"-"}`;
+  let tags=[];
+  if(card.antiAir)tags.push("🛩️ anti-air");
+  if(card.groundOnly)tags.push("🚫 can't hit air");
+  if(card.airUnit)tags.push("✈️ air unit");
+  document.getElementById("hpi").textContent=`HP:${card.hp||"-"} DMG:${card.damage||"-"} RNG:${card.range||"-"} ${tags.join(" ")}`;
   el.style.display="flex";el.style.left="50%";el.style.top="30%";el.style.transform="translate(-50%,-50%)";
 }
 function hidePreview(){document.getElementById("hprev").style.display="none";}
-
-// ═══════════════════════════════════════════════════
-// BANNER
-// ═══════════════════════════════════════════════════
 let banT=null;
 function updateBanner(){
   let el=document.getElementById("banner");
-  if(placing){
-    el.innerHTML=`🎯 Placing <b>${placing.emoji} ${placing.name}</b>${placing.id==="airstrike"?" — drag for line":""} • Hold to preview`;
-    el.style.display="block";
-  } else if(selected&&selected.team==="player"&&selected.members.length){
-    el.innerHTML=`${selected.cls.emoji} ${selected.cls.name} ❤️${selected.members.length}/${selected.cls.count||1} 💀${selected.kills} — Tap map to move`;
-    el.style.display="block";
-  } else {
-    el.style.display="none";
-  }
+  if(placing){el.innerHTML=`🎯 Placing <b>${placing.emoji} ${placing.name}</b>${placing.id==="airstrike"?" — drag for line":""} • Own tiles only`;el.style.display="block";}
+  else if(selected&&selected.team==="player"&&selected.members.length){el.innerHTML=`${selected.cls.emoji} ${selected.cls.name} ❤️${selected.members.length}/${selected.cls.count||1} ☠️${selected.kills} — Tap to move`;el.style.display="block";}
+  else el.style.display="none";
 }
 function flashBanner(msg,dur){
   let el=document.getElementById("banner");
-  el.innerHTML=msg;el.style.display="block";
-  clearTimeout(banT);banT=setTimeout(()=>{el.style.display="none";},dur);
+  el.innerHTML=msg;el.style.display="block";clearTimeout(banT);banT=setTimeout(()=>el.style.display="none",dur);
 }
 
 // ═══════════════════════════════════════════════════
@@ -654,25 +692,36 @@ function flashBanner(msg,dur){
 // ═══════════════════════════════════════════════════
 function doAirstrike(start,end){
   let dx=end.x-start.x,dy=end.y-start.y;
-  let steps=clamp(Math.floor(Math.hypot(dx,dy)/48)+2,2,12);
+  let steps=clamp(Math.floor(Math.hypot(dx,dy)/44)+2,2,14);
+  // Cost 16, only 1 in deck — earns the right to be devastating.
+  // Kill zone: 52px from strike line. Guaranteed lethal — fortress halves it but still lethal.
+  const KILL_R=52;
+  for(let s of soldiers){
+    if(s.team==="player"||s.hp<=0)continue;
+    if(ptLineDist(s.x,s.y,start.x,start.y,end.x,end.y)<KILL_R)
+      s.hp=-(s.cls.hp*10); // overkill flag — instant death regardless of shelter
+  }
+  for(let b of buildings){
+    if(b.destroyed||b.team!==(-1))continue;
+    let{wx,wy}=tileToWorld(b.x,b.y);
+    if(ptLineDist(wx,wy,start.x,start.y,end.x,end.y)<KILL_R){
+      b.hp=0;b.destroyed=true;explosions.push(new Explosion(wx,wy,true));
+    }
+  }
+  // Visual: explosions along the line
   for(let i=0;i<=steps;i++){
     let t=i/steps,px=start.x+dx*t,py=start.y+dy*t;
-    for(let s of soldiers){
-      if(s.team==="player"||s.hp<=0)continue;
-      if(ptLineDist(s.x,s.y,start.x,start.y,end.x,end.y)<85)
-        s.hp-=(20+Math.random()*14)*(s.inShelter?.5:1);
-    }
     for(let k=0;k<5;k++){
-      let rx=px+(Math.random()-.5)*100,ry=py+(Math.random()-.5)*65;
-      bullets.push(new Bullet(rx-180,ry-250,rx,ry,"#ff8030",true));
+      let rx=px+(Math.random()-.5)*80,ry=py+(Math.random()-.5)*50;
+      bullets.push(new Bullet(rx-200,ry-280,rx,ry,"#ff8030",true));
     }
     explosions.push(new Explosion(px,py,true));
   }
 }
 function ptLineDist(px,py,x1,y1,x2,y2){
   let A=px-x1,B=py-y1,C=x2-x1,D=y2-y1;
-  let t2=Math.max(0,Math.min(1,(A*C+B*D)/(C*C+D*D||1)));
-  return Math.hypot(px-x1-t2*C,py-y1-t2*D);
+  let t=Math.max(0,Math.min(1,(A*C+B*D)/(C*C+D*D||1)));
+  return Math.hypot(px-x1-t*C,py-y1-t*D);
 }
 
 // ═══════════════════════════════════════════════════
@@ -701,18 +750,18 @@ class Explosion{
 // ═══════════════════════════════════════════════════
 let spyPlane=null;
 class SpyPlane{
-  constructor(){this.x=W()/2;this.y=H()-100;this.phase=0;this.timer=360;this.state="up";}
+  constructor(){this.x=W()/2;this.y=H()-100;this.phase=0;this.timer=400;this.state="up";}
   update(){
     this.timer--;if(this.timer<=0){spyPlane=null;return;}
     this.phase+=.02;
     if(this.state==="up"){this.y-=2;this.x+=Math.sin(this.phase);if(this.y<OT()+TS()*5)this.state="circle";}
-    else{this.x=W()/2+Math.cos(this.phase)*130;this.y=OT()+TS()*4+Math.sin(this.phase*.7)*30;}
+    else{this.x=W()/2+Math.cos(this.phase)*150;this.y=OT()+TS()*4+Math.sin(this.phase*.7)*35;}
     let{tx,ty}=worldToTile(this.x,this.y);
-    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){let nx=tx+dx,ny=ty+dy;if(inM(nx,ny))fog[ny][nx]=true;}
+    for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){let nx=tx+dx,ny=ty+dy;if(inM(nx,ny))fog[ny][nx]=true;}
   }
   draw(){
     ctx.font="28px Arial";ctx.textAlign="center";ctx.fillText("🛩️",this.x,this.y);
-    ctx.fillStyle="rgba(255,255,255,.75)";ctx.font="10px Arial";
+    ctx.fillStyle="rgba(255,255,255,.7)";ctx.font="10px Arial";
     ctx.fillText("⛽"+Math.ceil(this.timer/20)+"s",this.x,this.y-20);
   }
 }
@@ -724,25 +773,32 @@ class Soldier{
   constructor(x,y,team,cls){
     this.x=x;this.y=y;this.team=team;this.cls=cls;
     this.hp=cls.hp;this.range=cls.range;this.damage=cls.damage;
-    this.speed=cls.speed||1.2;this.cool=0;this.kills=0;
+    this.speed=cls.speed||1.0;this.cool=0;this.kills=0;
     this.inShelter=false;this.terType=T_PLAINS;
+    this.morale=1.0; // 1.0 = full, drops briefly when allies die nearby
   }
   getTile(){return worldToTile(this.x,this.y);}
   update(){
     this.cool=Math.max(0,this.cool-1);
+    // Morale slowly recovers
+    this.morale=Math.min(1,this.morale+0.002);
     let{tx,ty}=this.getTile();
     this.terType=inM(tx,ty)?terrain[ty][tx]:T_PLAINS;
     this.inShelter=false;
     for(let b of buildings){
-      if(b.x===tx&&b.y===ty&&(b.type==="fortress"||b.type==="barracks")){this.inShelter=true;break;}
+      if(!b.destroyed&&b.x===tx&&b.y===ty&&(b.type==="fortress"||b.type==="barracks"))
+        {this.inShelter=true;break;}
     }
   }
   draw(){
     let big=["tank","artillery"].includes(this.cls.id);
     let sz=big?26:18;
     ctx.font=sz+"px Arial";ctx.textAlign="center";
+    // Low morale = slight red tint overlay
+    if(this.morale<0.8){ctx.globalAlpha=0.5+this.morale*.5;}
     ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillText(this.cls.emoji,this.x+1,this.y+sz/3+1);
     ctx.fillText(this.cls.emoji,this.x,this.y+sz/3);
+    ctx.globalAlpha=1;
     let bw=20,hp=this.hp/this.cls.hp;
     ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(this.x-bw/2-1,this.y-sz/2-8,bw+2,5);
     ctx.fillStyle=hp>.6?"#4caf50":hp>.3?"#ffc107":"#f44336";
@@ -755,10 +811,22 @@ class Soldier{
 // ═══════════════════════════════════════════════════
 // SQUAD CLASS
 // ═══════════════════════════════════════════════════
+// Squad orders:
+//   "advance" — march to poi (first command), then transitions to "patrol"
+//   "patrol"  — wander ±patrol_range tiles from patrolBase
+//   "hold"    — stay put (no manual orders yet, but AI can use)
 class Squad{
   constructor(x,y,team,cls){
     this.team=team;this.cls=cls;this.poi={x,y};
     this.members=[];this.kills=0;this._bcool=0;
+    // "idle"    — freshly placed, holds position until player gives first command
+    // "advance" — marching to poi (player-set or rally)
+    // "patrol"  — reached poi, now pushing toward enemy on own initiative
+    this.orders="idle";
+    this.firstOrderGiven=false; // set true when player taps a destination
+    this.patrolBase=null;
+    this.patrolTarget=null;
+    this.patrolTimer=0;
     let n=cls.count||1;
     for(let i=0;i<n;i++){
       let s=new Soldier(x+(Math.random()-.5)*36,y+(Math.random()-.5)*36,team,cls);
@@ -771,49 +839,70 @@ class Squad{
     let sx=0,sy=0;for(let m of this.members){sx+=m.x;sy+=m.y;}
     return{x:sx/this.members.length,y:sy/this.members.length};
   }
+  setOrder(px,py){
+    this.poi={x:px,y:py};
+    this.orders="advance";
+    this.firstOrderGiven=true;
+    this.patrolBase=null;
+    this.patrolTarget=null;
+  }
   isArmoryBoosted(){
     if(!this.members.length)return false;
     let{tx,ty}=this.members[0].getTile();
-    return buildings.some(b=>b.type==="armory"&&b.team===(this.team==="player"?1:-1)&&Math.hypot(b.x-tx,b.y-ty)<=3);
+    return buildings.some(b=>!b.destroyed&&b.type==="armory"&&b.team===(this.team==="player"?1:-1)&&Math.hypot(b.x-tx,b.y-ty)<=3);
   }
+  // DYNAMIC TERRITORY: capture radius around each member based on cls.captureRadius
   captureTerritory(){
+    let own=this.team==="player"?1:-1;
+    let cr=(this.cls.captureRadius||1);
     for(let s of this.members){
       let{tx,ty}=s.getTile();if(!inM(tx,ty))continue;
-      let own=this.team==="player"?1:-1;
-      if(mapOwn[ty][tx]!==own)mapOwn[ty][tx]=own;
-      fog[ty][tx]=true;
-      for(let b of buildings){if(b.x===tx&&b.y===ty)b.team=own;}
+      for(let dy=-cr;dy<=cr;dy++)for(let dx=-cr;dx<=cr;dx++){
+        if(Math.hypot(dx,dy)>cr)continue;
+        let nx=tx+dx,ny=ty+dy;if(!inM(nx,ny))continue;
+        if(mapOwn[ny][nx]!==own)mapOwn[ny][nx]=own;
+        fog[ny][nx]=true;
+        for(let b of buildings){if(!b.destroyed&&b.x===nx&&b.y===ny)b.team=own;}
+      }
     }
   }
   update(){
     let c=this.center(),fighting=false;
     let armBoost=this.isArmoryBoosted();
-    // [#3] Freeze movement while swirl is active (only for player squads as candidates)
     let frozenBySwirl=SWIRL.active&&this.team==="player";
     for(let s of this.members){
       s.update();if(s.hp<=0)continue;
+      // Medic: heal
       if(this.cls.id==="medic"){
         if(s.cool<=0){
           for(let sol of soldiers){
-            if(sol.team===this.team&&sol.hp>0&&sol.hp<sol.cls.hp&&Math.hypot(sol.x-s.x,sol.y-s.y)<90)
-              sol.hp=Math.min(sol.cls.hp,sol.hp+2.5);
+            if(sol.team===this.team&&sol.hp>0&&sol.hp<sol.cls.hp&&Math.hypot(sol.x-s.x,sol.y-s.y)<95)
+              sol.hp=Math.min(sol.cls.hp,sol.hp+3);
           }
-          s.cool=35;
+          s.cool=30;
         }
         continue;
       }
+      // Engineer: repair non-destroyed buildings
       if(this.cls.id==="engineer"){
         if(s.cool<=0){
           let{tx,ty}=s.getTile();
           for(let b of buildings){
-            if(b.x===tx&&b.y===ty&&b.team===(this.team==="player"?1:-1)&&b.hp<b.maxHp)
-              b.hp=Math.min(b.maxHp,b.hp+5);
+            if(!b.destroyed&&b.x===tx&&b.y===ty&&b.team===(this.team==="player"?1:-1)&&b.hp<b.maxHp)
+              b.hp=Math.min(b.maxHp,b.hp+6);
           }
-          s.cool=40;
+          s.cool=35;
         }
       }
+      // Combat — respect air/ground targeting rules
       for(let e of soldiers){
         if(e.team===this.team||e.hp<=0)continue;
+        // AIR TARGETING RULES:
+        // groundOnly troops cannot attack airUnit troops
+        // airUnit troops (spy etc.) cannot be attacked by groundOnly — only antiAir can
+        // Note: spy/airstrike have hp:0 so they won't be in soldiers[], this is future-proof
+        if(e.cls.airUnit&&this.cls.groundOnly)continue; // ground can't hit air
+        if(e.cls.airUnit&&!this.cls.antiAir)continue;   // only antiAir can hit air
         let d=Math.hypot(e.x-s.x,e.y-s.y);
         if(d<s.range){
           fighting=true;
@@ -821,69 +910,148 @@ class Squad{
             let tdef=TDATA[e.terType].defBonus;
             let tatk=TDATA[s.terType].atkBonus;
             let shelt=e.inShelter?.45:0;
-            let armMult=armBoost?1.25:1;
+            let armMult=armBoost?1.30:1;
+            // Berserker ignores terrain defence bonus
+            let defMult=this.cls.id==="berserker"?0:(1-tdef-shelt);
+            let moraleMult=s.morale;
             if(Math.random()<(e.inShelter?.42:.72)){
-              let dmg=Math.max(1,s.damage*tatk*armMult*(1-tdef-shelt));
-              e.hp-=dmg;if(e.hp<=0){this.kills++;s.kills++;}
+              let dmg=Math.max(1,s.damage*tatk*armMult*defMult*moraleMult);
+              let wasAlive=e.hp>0;
+              e.hp-=dmg;
+              if(wasAlive&&e.hp<=0){
+                this.kills++;s.kills++;
+                // Morale drop for nearby allies of the killed soldier
+                for(let ally of soldiers){
+                  if(ally.team===e.team&&ally.hp>0&&Math.hypot(ally.x-e.x,ally.y-e.y)<80)
+                    ally.morale=Math.max(0.5,ally.morale-0.25);
+                }
+              }
             }
             let col=this.team==="player"?"#5dd8ff":"#ff6060";
-            let big=["tank","artillery","rocket"].includes(this.cls.id);
+            let big=["tank","artillery","rocket","aa"].includes(this.cls.id);
             bullets.push(new Bullet(s.x,s.y,e.x,e.y,col,big));
-            s.cool=this.cls.id==="artillery"?65:this.cls.id==="sniper"?50:this.cls.id==="berserker"?14:20;
+            s.cool=this.cls.id==="artillery"?90:this.cls.id==="sniper"?70:
+                   this.cls.id==="berserker"?20:this.cls.id==="aa"?26:30;
           }
         }
       }
     }
+    // Remove dead
+    let prevCount=this.members.length;
     this.members=this.members.filter(m=>m.hp>0);
     if(!this.members.length){squads=squads.filter(sq=>sq!==this);if(selected===this)selected=null;return;}
     this.captureTerritory();
-    // Movement — frozen during swirl gesture
-    if(!frozenBySwirl&&((!fighting&&this.cls.id!=="artillery")||this.cls.id==="cavalry")){
-      let dx=this.poi.x-c.x,dy=this.poi.y-c.y,d=Math.hypot(dx,dy);
-      if(d>16){
+
+    // ── MOVEMENT & ORDERS ──────────────────────────
+    if(!frozenBySwirl){
+      let dx=0,dy=0,d=0;
+
+      if(this.orders==="idle"){
+        // Hold position — no movement until player gives first command
+        // AI squads are never idle (aiMoveSquad always sets an order)
+        d=0;
+      }
+
+      if(this.orders==="advance"){
+        dx=this.poi.x-c.x;dy=this.poi.y-c.y;d=Math.hypot(dx,dy);
+        // Reached POI → only then start patrolling toward enemy
+        if(d<22){
+          this.orders="patrol";
+          this.patrolBase={x:c.x,y:c.y};
+          this.patrolTarget=null;this.patrolTimer=0;
+        }
+      }
+
+      if(this.orders==="patrol"){
+        this.patrolTimer-=1;
+        if(!this.patrolTarget||this.patrolTimer<=0){
+          // Push progressively toward enemy territory from current patrol base
+          // Player squads drift upward (enemy is at top, lower y)
+          // AI squads drift downward (player is at bottom, higher y)
+          let fwdY=this.team==="player"
+            ? this.patrolBase.y-(30+Math.random()*70)
+            : this.patrolBase.y+(30+Math.random()*70);
+          let fwdX=this.patrolBase.x+(Math.random()-.5)*140;
+          fwdX=clamp(fwdX,OX()+TS(),OX()+(MAP_W-1)*TS());
+          fwdY=clamp(fwdY,OT()+TS()*2,OT()+(MAP_H-2)*TS());
+          this.patrolTarget={x:fwdX,y:fwdY};
+          // Advance the base so each wander step goes further forward
+          this.patrolBase={x:fwdX,y:fwdY};
+          this.patrolTimer=180+Math.random()*240; // 3-7s between patrol steps at 60fps
+        }
+        dx=this.patrolTarget.x-c.x;dy=this.patrolTarget.y-c.y;d=Math.hypot(dx,dy);
+        if(d<18){this.patrolTarget=null;this.patrolTimer=0;}
+      }
+
+      // Actually move (artillery holds when fighting; cavalry always charges)
+      let canMove=(!fighting&&this.cls.id!=="artillery")||this.cls.id==="cavalry";
+      if(canMove&&d>16){
         dx/=d;dy/=d;
         for(let s of this.members){
           if(s.hp<=0)continue;
           let sp=s.speed*TDATA[s.terType].speedMult;
-          s.x=clamp(s.x+dx*sp+(Math.random()-.5)*.35,OX()+TS()*.5,OX()+(MAP_W-.5)*TS());
-          s.y=clamp(s.y+dy*sp+(Math.random()-.5)*.35,OT()+TS()*.5,OT()+(MAP_H-.5)*TS());
+          s.x=clamp(s.x+dx*sp+(Math.random()-.5)*.3,OX()+TS()*.4,OX()+(MAP_W-.4)*TS());
+          s.y=clamp(s.y+dy*sp+(Math.random()-.5)*.3,OT()+TS()*.4,OT()+(MAP_H-.4)*TS());
         }
       }
     }
-    if(["mortar","rocket","artillery"].includes(this.cls.id)){
+
+    // Mortar/rocket/artillery bombardment
+    if(["mortar","rocket","artillery","aa"].includes(this.cls.id)){
       this._bcool=Math.max(0,this._bcool-1);
       if(this._bcool<=0){
         for(let e of soldiers){
           if(e.team===this.team||e.hp<=0)continue;
+          // AA targets air units if present, else ground
+          if(this.cls.id==="aa"&&!e.cls.airUnit)continue;
           let d=Math.hypot(e.x-c.x,e.y-c.y);
-          if(d<this.cls.range&&d>70){
-            for(let near of soldiers){
-              if(near.team===this.team||near.hp<=0)continue;
-              if(Math.hypot(near.x-e.x,near.y-e.y)<55)near.hp-=this.cls.damage*(near.inShelter?.45:1);
+          if(d<this.cls.range&&d>60){
+            // Splash damage for mortar (not rocket or aa)
+            if(this.cls.id==="mortar"){
+              for(let near of soldiers){
+                if(near.team===this.team||near.hp<=0)continue;
+                if(Math.hypot(near.x-e.x,near.y-e.y)<55)near.hp-=this.cls.damage*(near.inShelter?.45:1);
+              }
+            } else {
+              e.hp-=this.cls.damage*(e.inShelter?.5:1);
             }
-            explosions.push(new Explosion(e.x,e.y,true));
-            bullets.push(new Bullet(c.x,c.y-25,e.x,e.y,"#ffb030",true));
-            this._bcool=this.cls.id==="artillery"?70:50;break;
+            explosions.push(new Explosion(e.x,e.y,this.cls.id==="mortar"));
+            bullets.push(new Bullet(c.x,c.y-20,e.x,e.y,"#ffb030",true));
+            this._bcool=this.cls.id==="artillery"?100:this.cls.id==="aa"?32:75;break;
           }
         }
       }
     }
+
+    // Mine check
     for(let m of mines){
       if(m.triggered||m.team===this.team)continue;
       let{wx,wy}=tileToWorld(m.x,m.y);
       for(let s of this.members){
         if(Math.hypot(s.x-wx,s.y-wy)<TS()*1.1){
           m.triggered=true;
-          for(let sol of soldiers){if(Math.hypot(sol.x-wx,sol.y-wy)<TS()*2)sol.hp-=25+Math.random()*20;}
+          for(let sol of soldiers){if(Math.hypot(sol.x-wx,sol.y-wy)<TS()*2.2)sol.hp-=28+Math.random()*18;}
           explosions.push(new Explosion(wx,wy,true));break;
         }
       }
     }
+    // Watchtower fog reveal
     if(this.team==="player"&&this.members.length){
       let{tx,ty}=this.members[0].getTile();
       for(let b of buildings){
-        if(b.type==="watchtower"&&Math.hypot(b.x-tx,b.y-ty)<1.5){
-          for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){let nx=b.x+dx,ny=b.y+dy;if(inM(nx,ny))fog[ny][nx]=true;}
+        if(!b.destroyed&&b.type==="watchtower"&&Math.hypot(b.x-tx,b.y-ty)<1.5){
+          for(let dy=-6;dy<=6;dy++)for(let dx=-6;dx<=6;dx++){let nx=b.x+dx,ny=b.y+dy;if(inM(nx,ny))fog[ny][nx]=true;}
+        }
+      }
+    }
+    // Building damage from tank (rams into enemy buildings)
+    if(this.cls.id==="tank"){
+      let{tx,ty}=this.members[0]?.getTile()||{tx:-1,ty:-1};
+      for(let b of buildings){
+        if(b.destroyed||b.team===(this.team==="player"?1:-1))continue;
+        if(b.x===tx&&b.y===ty){
+          b.hp-=0.5;
+          if(b.hp<=0){b.hp=0;b.destroyed=true;explosions.push(new Explosion(tileToWorld(b.x,b.y).wx,tileToWorld(b.x,b.y).wy,true));}
         }
       }
     }
@@ -895,9 +1063,8 @@ class Squad{
 // GAME STATE
 // ═══════════════════════════════════════════════════
 let squads=[],soldiers=[];
-let gold=15,aiGold=18,timer=180,gameOver=false;
+let gold=15,aiGold=18,timer=240,gameOver=false;
 let goldAccum=0,aiGoldAccum=0,goldMineT=0;
-
 function calcTerritory(){
   let p=0,a=0,tot=MAP_W*MAP_H;
   for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){if(mapOwn[y][x]===1)p++;if(mapOwn[y][x]===-1)a++;}
@@ -905,50 +1072,83 @@ function calcTerritory(){
 }
 
 // ═══════════════════════════════════════════════════
-// AI
+// AI — smarter and more varied
 // ═══════════════════════════════════════════════════
-let aiSpawnT=0,aiMoveT=0;
-const AI_ELIGIBLE=TROOPS.filter(t=>!["spy","airstrike","mine","paratrooper","medic"].includes(t.id));
+let aiSpawnT=0,aiMoveT=0,aiStrategy="rush"; // rush, contain, flank, siege
+let aiStratTimer=0;
+const AI_ELIGIBLE=TROOPS.filter(t=>!["spy","airstrike","mine","para","medic"].includes(t.id));
+
 function pickCounterUnit(){
   let ps=squads.filter(s=>s.team==="player");
   let pref=[];
   if(ps.some(s=>s.cls.id==="tank"))pref.push("rocket","artillery","mortar");
-  if(ps.some(s=>s.cls.id==="sniper"))pref.push("cavalry","berserker","shield");
-  if(ps.some(s=>s.cls.id==="berserker"))pref.push("shield","squad","sniper");
-  if(ps.length>=3)pref.push("mortar","artillery");
+  if(ps.some(s=>s.cls.id==="sniper"))pref.push("cavalry","berserker");
+  if(ps.some(s=>s.cls.id==="berserker"))pref.push("shield","squad");
+  if(ps.some(s=>s.cls.id==="artillery"))pref.push("cavalry","rocket");
+  if(ps.length>=4)pref.push("mortar","artillery");
+  // Strategy modifiers
+  if(aiStrategy==="flank")pref.unshift("cavalry","berserker");
+  if(aiStrategy==="siege")pref.unshift("artillery","mortar","rocket");
+  if(aiStrategy==="rush")pref.unshift("squad","soldier","berserker");
   for(let id of pref){let t=AI_ELIGIBLE.find(e=>e.id===id);if(t&&t.cost<=aiGold)return t;}
   let pool=AI_ELIGIBLE.filter(t=>t.cost<=aiGold);
   if(!pool.length)return [...AI_ELIGIBLE].sort((a,b)=>a.cost-b.cost)[0];
-  let w=pool.map(t=>Math.max(1,10-t.cost)),tot=w.reduce((a,b)=>a+b,0),r=Math.random()*tot;
+  let w=pool.map(t=>Math.max(1,12-t.cost));
+  let tot=w.reduce((a,b)=>a+b,0),r=Math.random()*tot;
   for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
   return pool[pool.length-1];
 }
-function aiMoveSquad(s){
-  let c=s.center();
-  let ps=squads.filter(sq=>sq.team==="player"&&sq.members.length);
+
+function aiMoveSquad(sq){
+  let c=sq.center();
+  let ps=squads.filter(s=>s.team==="player"&&s.members.length);
   let nearest=null,nDist=Infinity;
   for(let p2 of ps){let d=Math.hypot(p2.center().x-c.x,p2.center().y-c.y);if(d<nDist){nDist=d;nearest=p2;}}
+  // Target player-owned buildings (strategic pressure)
   let sbest=null,sBestD=Infinity;
-  for(let b of buildings){if(b.team===1){let{wx,wy}=tileToWorld(b.x,b.y);let d=Math.hypot(wx-c.x,wy-c.y);if(d<sBestD){sBestD=d;sbest={x:wx,y:wy};}}}
-  if(s.cls.id==="cavalry"){let side=Math.random()<.5?OX()+TS()*2:OX()+(MAP_W-2)*TS();s.poi={x:side,y:OT()+(MAP_H-3)*TS()};return;}
-  if(nearest&&nDist<550){let nc=nearest.center();s.poi={x:nc.x+(Math.random()-.5)*35,y:nc.y+(Math.random()-.5)*35};}
-  else if(sbest&&sBestD<450){s.poi=sbest;}
-  else{s.poi={x:W()/2+(Math.random()-.5)*180,y:OT()+(MAP_H-4)*TS()};}
+  for(let b of buildings){
+    if(b.team===1&&!b.destroyed){let{wx,wy}=tileToWorld(b.x,b.y);let d=Math.hypot(wx-c.x,wy-c.y);if(d<sBestD){sBestD=d;sbest={x:wx,y:wy};}}
+  }
+  // Cavalry always flanks wide
+  if(sq.cls.id==="cavalry"||aiStrategy==="flank"){
+    let side=Math.random()<.5?OX()+TS()*1.5:OX()+(MAP_W-1.5)*TS();
+    sq.orders="advance";sq.poi={x:side,y:OT()+(MAP_H-4)*TS()};return;
+  }
+  // Siege: target buildings
+  if(aiStrategy==="siege"&&sbest&&sBestD<600){sq.orders="advance";sq.poi=sbest;return;}
+  if(nearest&&nDist<600){
+    let nc=nearest.center();
+    sq.orders="advance";sq.poi={x:nc.x+(Math.random()-.5)*40,y:nc.y+(Math.random()-.5)*40};
+  } else if(sbest&&sBestD<500){
+    sq.orders="advance";sq.poi=sbest;
+  } else {
+    sq.orders="advance";sq.poi={x:W()/2+(Math.random()-.5)*220,y:OT()+(MAP_H-5)*TS()};
+  }
 }
+
 function updateAI(dt){
-  aiGoldAccum+=dt;if(aiGoldAccum>=1){aiGoldAccum-=1;aiGold+=1.2;}
+  // Vary AI strategy every 30-50s for dynamic pressure
+  aiStratTimer+=dt;
+  if(aiStratTimer>35+Math.random()*20){
+    aiStratTimer=0;
+    let strats=["rush","contain","flank","siege"];
+    aiStrategy=strats[Math.floor(Math.random()*strats.length)];
+  }
+  aiGoldAccum+=dt;if(aiGoldAccum>=1){aiGoldAccum-=1;aiGold+=0.75;}
   aiSpawnT+=dt;
-  if(aiSpawnT>1.6){
+  if(aiSpawnT>3.5){
     aiSpawnT=0;
     let cls=pickCounterUnit();
     if(cls&&aiGold>=cls.cost){
       aiGold-=cls.cost;
-      let x=OX()+(2+Math.random()*(MAP_W-4))*TS();
-      let y=OT()+(.5+Math.random()*5)*TS();
+      // AI spawns across full width (spread pressure)
+      let x=OX()+(1.5+Math.random()*(MAP_W-3))*TS();
+      let y=OT()+(.5+Math.random()*4.5)*TS();
       let sq=new Squad(x,y,"ai",{...cls});aiMoveSquad(sq);squads.push(sq);
-    } else if(cls){aiSpawnT=1.0;}
+    } else if(cls){aiSpawnT=2.0;}
   }
-  aiMoveT+=dt;if(aiMoveT>.5){aiMoveT=0;for(let s of squads){if(s.team==="ai")aiMoveSquad(s);}}
+  aiMoveT+=dt;
+  if(aiMoveT>.6){aiMoveT=0;for(let s of squads){if(s.team==="ai")aiMoveSquad(s);}}
 }
 
 // ═══════════════════════════════════════════════════
@@ -966,8 +1166,8 @@ function drawTerrain(){
       }
       let td=TDATA[terrain[y][x]];
       ctx.fillStyle=td.color;ctx.fillRect(px,py,ts,ts);
-      if(mapOwn[y][x]===1){ctx.fillStyle="rgba(79,195,247,.25)";ctx.fillRect(px,py,ts,ts);}
-      else if(mapOwn[y][x]===-1){ctx.fillStyle="rgba(255,82,82,.25)";ctx.fillRect(px,py,ts,ts);}
+      if(mapOwn[y][x]===1){ctx.fillStyle="rgba(79,195,247,.22)";ctx.fillRect(px,py,ts,ts);}
+      else if(mapOwn[y][x]===-1){ctx.fillStyle="rgba(255,82,82,.22)";ctx.fillRect(px,py,ts,ts);}
       if(ts>=13&&td.icon){
         ctx.font=Math.min(ts-3,12)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
         ctx.fillText(td.icon,px+ts/2,py+ts/2);ctx.textBaseline="alphabetic";
@@ -979,7 +1179,7 @@ function drawTerrain(){
 function drawOutlines(){
   let ts=TS(),ox=OX(),ot=OT();
   function outline(own,col){
-    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();
     for(let y=0;y<MAP_H;y++)for(let x=0;x<MAP_W;x++){
       if(mapOwn[y][x]!==own||!fog[y][x])continue;
       let px=ox+x*ts,py=ot+y*ts;
@@ -998,6 +1198,12 @@ function drawBuildings(){
     if(!fog[b.y][b.x])continue;
     let px=ox+b.x*ts+ts/2,py=ot+b.y*ts+ts/2;
     let bt=BTYPES[b.type],sz=Math.min(ts-2,18);
+    if(b.destroyed){
+      // Rubble icon
+      ctx.font=(sz*0.8)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.globalAlpha=0.4;ctx.fillText("💥",px,py);ctx.globalAlpha=1;ctx.textBaseline="alphabetic";
+      continue;
+    }
     ctx.font=sz+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
     ctx.fillStyle="rgba(0,0,0,.45)";ctx.beginPath();ctx.arc(px,py,sz/2+3,0,Math.PI*2);ctx.fill();
     ctx.fillText(bt.emoji,px,py);ctx.textBaseline="alphabetic";
@@ -1018,100 +1224,83 @@ function drawMines(){
     }
   }
 }
+// Rally point marker
+function drawRallyPoint(){
+  if(!rallyPoint)return;
+  ctx.font="18px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.globalAlpha=0.7;
+  ctx.fillText("📍",rallyPoint.x,rallyPoint.y);
+  ctx.globalAlpha=1;ctx.textBaseline="alphabetic";
+  // Pulsing ring
+  let p=(Math.sin(performance.now()/400)+1)/2;
+  ctx.strokeStyle=`rgba(255,213,79,${0.3+p*0.4})`;ctx.lineWidth=2;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.arc(rallyPoint.x,rallyPoint.y,22+p*6,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+}
 
-// [#1] Selection ring pulse (time-based)
-let _pulseT=0;
-
-// [#1] Draw pulsing selection ring + label + arrow for selected squad
-// All other friendly squads get a faint 50% opacity indicator only
+// Selection visuals
 function drawSquadIndicators(){
   if(!selected||selected.team!=="player"||!selected.members.length)return;
   let now=performance.now();
-  // Pulse: 0→1→0 over 800ms
-  let pulse=(Math.sin((now/800)*Math.PI*2)+1)/2; // 0..1
-  let ringAlpha=0.5+pulse*0.5; // 0.5..1.0
-  let ringColor=`rgba(${Math.round(79+176*pulse)},${Math.round(195+60*pulse)},247,${ringAlpha})`;
-
-  // Faint dots on non-selected friendly squads
+  let pulse=(Math.sin((now/800)*Math.PI*2)+1)/2;
+  let ringAlpha=0.5+pulse*0.5;
+  let rr=Math.round(79+176*pulse),rg=Math.round(195+60*pulse);
+  // Faint rings on non-selected friendly squads
   for(let sq of squads){
     if(sq.team!=="player"||sq===selected||!sq.members.length)continue;
     let c=sq.center();
-    ctx.strokeStyle="rgba(79,195,247,0.3)";ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.arc(c.x,c.y,18,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle="rgba(79,195,247,0.28)";ctx.lineWidth=1.5;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(c.x,c.y,16,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
   }
-
   let sc=selected.center();
-
-  // [#1] Big pulsing ring (60px radius)
-  ctx.strokeStyle=ringColor;ctx.lineWidth=3;ctx.setLineDash([]);
+  // Big pulsing ring
+  ctx.strokeStyle=`rgba(${rr},${rg},247,${ringAlpha})`;ctx.lineWidth=3;ctx.setLineDash([]);
   ctx.beginPath();ctx.arc(sc.x,sc.y,60,0,Math.PI*2);ctx.stroke();
-  // Inner glow ring
-  ctx.strokeStyle=`rgba(255,255,255,${ringAlpha*0.4})`;ctx.lineWidth=1.5;
+  ctx.strokeStyle=`rgba(255,255,255,${ringAlpha*0.35})`;ctx.lineWidth=1.5;
   ctx.beginPath();ctx.arc(sc.x,sc.y,54,0,Math.PI*2);ctx.stroke();
-
-  // [#1] Floating label 40px above center
+  // Label
   let label=`${selected.cls.emoji} ${selected.cls.name} ❤️${selected.members.length}/${selected.cls.count||1}`;
   ctx.font="bold 12px Arial";ctx.textAlign="center";ctx.textBaseline="alphabetic";
-  let lx=sc.x,ly=sc.y-40;
-  // Dark background pill
-  let tw=ctx.measureText(label).width;
+  let tw=ctx.measureText(label).width,ph=18,pw=tw+14;
   ctx.fillStyle="rgba(0,0,0,0.72)";
-  let ph=18,pw=tw+14;
-  ctx.beginPath();
-  ctx.roundRect?ctx.roundRect(lx-pw/2,ly-ph+2,pw,ph,8):ctx.rect(lx-pw/2,ly-ph+2,pw,ph);
+  if(ctx.roundRect)ctx.roundRect(sc.x-pw/2,sc.y-58,pw,ph,7);else ctx.rect(sc.x-pw/2,sc.y-58,pw,ph);
   ctx.fill();
-  ctx.fillStyle="#ffffff";ctx.fillText(label,lx,ly);
-  ctx.textBaseline="alphabetic";
-
-  // [#1] Arrow from center to POI
+  ctx.fillStyle="#ffffff";ctx.fillText(label,sc.x,sc.y-44);
+  // Arrow to POI
   if(selected.poi){
-    let px=selected.poi.x,py=selected.poi.y;
+    let{x:px,y:py}=selected.poi;
     let adx=px-sc.x,ady=py-sc.y,alen=Math.hypot(adx,ady);
-    if(alen>10){
-      // Line from edge of ring to near POI
+    if(alen>12){
       let nx=adx/alen,ny=ady/alen;
       let sx2=sc.x+nx*64,sy2=sc.y+ny*64;
-      let ex=px-nx*14,ey=py-ny*14;
-      ctx.strokeStyle="rgba(255,255,255,0.85)";ctx.lineWidth=2;ctx.setLineDash([6,4]);
-      ctx.beginPath();ctx.moveTo(sx2,sy2);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
-      // Arrowhead
+      let ex2=px-nx*14,ey2=py-ny*14;
+      ctx.strokeStyle="rgba(255,255,255,0.8)";ctx.lineWidth=2;ctx.setLineDash([6,4]);
+      ctx.beginPath();ctx.moveTo(sx2,sy2);ctx.lineTo(ex2,ey2);ctx.stroke();ctx.setLineDash([]);
       let ah=10,aw=6;
-      let ax1=ex-ah*nx+aw*ny,ay1=ey-ah*ny-aw*nx;
-      let ax2=ex-ah*nx-aw*ny,ay2=ey-ah*ny+aw*nx;
-      ctx.fillStyle="rgba(255,255,255,0.85)";
-      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.closePath();ctx.fill();
-      // POI pin
-      ctx.font="16px Arial";ctx.textAlign="center";ctx.fillText("📍",px,py+6);
+      ctx.fillStyle="rgba(255,255,255,0.8)";ctx.beginPath();
+      ctx.moveTo(px,py);ctx.lineTo(ex2-ah*nx+aw*ny,ey2-ah*ny-aw*nx);
+      ctx.lineTo(ex2-ah*nx-aw*ny,ey2-ah*ny+aw*nx);ctx.closePath();ctx.fill();
+      ctx.font="15px Arial";ctx.textAlign="center";ctx.fillText("📍",px,py+5);
     }
   }
 }
-
-// [#3] Draw swirl selection zone overlay
 function drawSwirlZone(){
   if(!SWIRL.zoneVisible)return;
-  // Zone circle
-  ctx.strokeStyle="rgba(79,195,247,0.35)";ctx.lineWidth=2;ctx.setLineDash([5,4]);
+  ctx.strokeStyle="rgba(79,195,247,0.32)";ctx.lineWidth=2;ctx.setLineDash([5,4]);
   ctx.beginPath();ctx.arc(SWIRL.x,SWIRL.y,SWIRL_RADIUS,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle="rgba(79,195,247,0.06)";
-  ctx.beginPath();ctx.arc(SWIRL.x,SWIRL.y,SWIRL_RADIUS,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(79,195,247,0.05)";ctx.beginPath();ctx.arc(SWIRL.x,SWIRL.y,SWIRL_RADIUS,0,Math.PI*2);ctx.fill();
   if(!SWIRL.candidates.length)return;
-  // Highlight current candidate with bright pulsing ring
   let cand=SWIRL.candidates[SWIRL.cycleIdx];
   if(cand&&cand.members.length){
-    let c=cand.center();
-    let now=performance.now();
+    let cc=cand.center(),now=performance.now();
     let pulse=(Math.sin((now/600)*Math.PI*2)+1)/2;
     ctx.strokeStyle=`rgba(255,220,80,${0.6+pulse*0.4})`;ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(c.x,c.y,60,0,Math.PI*2);ctx.stroke();
-    // Label
+    ctx.beginPath();ctx.arc(cc.x,cc.y,60,0,Math.PI*2);ctx.stroke();
     ctx.font="bold 12px Arial";ctx.textAlign="center";
     let lbl=`${cand.cls.emoji} ${cand.cls.name}`;
     let tw=ctx.measureText(lbl).width;
-    ctx.fillStyle="rgba(0,0,0,.75)";
-    ctx.fillRect(c.x-tw/2-7,c.y-54,tw+14,18);
-    ctx.fillStyle="#ffe040";ctx.fillText(lbl,c.x,c.y-40);
+    ctx.fillStyle="rgba(0,0,0,.75)";ctx.fillRect(cc.x-tw/2-7,cc.y-54,tw+14,18);
+    ctx.fillStyle="#ffe040";ctx.fillText(lbl,cc.x,cc.y-40);
   }
-  // Counter label near finger
   if(SWIRL.candidates.length>1){
     let txt=`${SWIRL.cycleIdx+1}/${SWIRL.candidates.length}`;
     ctx.font="bold 11px Arial";ctx.textAlign="center";
@@ -1119,23 +1308,23 @@ function drawSwirlZone(){
     ctx.fillStyle="#4fc3f7";ctx.fillText(txt,SWIRL.x,SWIRL.y+SWIRL_RADIUS+16);
   }
 }
-
 function drawPlacingCursor(){
   if(!placing||placing.id==="airstrike"||!lastPointer)return;
   let{tx,ty}=worldToTile(lastPointer.x,lastPointer.y);
   if(!inM(tx,ty))return;
   let ts=TS(),ox=OX(),ot=OT();
-  let px=ox+tx*ts,py=ot+ty*ts;
-  let valid=placing.id==="paratrooper"||(inM(tx,ty)&&mapOwn[ty][tx]!==-1);
+  let px2=ox+tx*ts,py2=ot+ty*ts;
+  // Valid = own tile (or any for para)
+  let valid=placing.id==="para"||(inM(tx,ty)&&mapOwn[ty][tx]===1);
   ctx.strokeStyle=valid?"rgba(79,195,247,.7)":"rgba(255,82,82,.7)";
   ctx.lineWidth=2;ctx.setLineDash([4,3]);
-  ctx.strokeRect(px+1,py+1,ts-2,ts-2);ctx.setLineDash([]);
+  ctx.strokeRect(px2+1,py2+1,ts-2,ts-2);ctx.setLineDash([]);
   ctx.fillStyle=valid?"rgba(79,195,247,.1)":"rgba(255,82,82,.1)";
-  ctx.fillRect(px+1,py+1,ts-2,ts-2);
+  ctx.fillRect(px2+1,py2+1,ts-2,ts-2);
   ctx.font=Math.min(ts-4,18)+"px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(placing.emoji,px+ts/2,py+ts/2);ctx.textBaseline="alphabetic";
+  ctx.fillText(placing.emoji,px2+ts/2,py2+ts/2);ctx.textBaseline="alphabetic";
   if(placing.id==="mine"){
-    ctx.strokeStyle="rgba(255,200,0,.35)";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+    ctx.strokeStyle="rgba(255,200,0,.3)";ctx.lineWidth=1;ctx.setLineDash([3,3]);
     ctx.strokeRect(ox+(tx-4)*ts,ot+(ty-4)*ts,8*ts,8*ts);ctx.setLineDash([]);
   }
 }
@@ -1145,25 +1334,27 @@ function drawDragLine(){
   ctx.beginPath();ctx.moveTo(dragStart.x,dragStart.y);ctx.lineTo(lastPointer.x,lastPointer.y);ctx.stroke();ctx.setLineDash([]);
   ctx.font="22px Arial";ctx.textAlign="center";ctx.fillText("✈️",lastPointer.x,lastPointer.y-10);
 }
-
-// Enemy fog zone
 const FOG_ROWS=8;
 function drawEnemyFogOverlay(){
   if(spyPlane)return;
   let ts=TS(),ox=OX(),ot=OT(),fogH=FOG_ROWS*ts;
   ctx.fillStyle="rgba(5,5,20,0.82)";ctx.fillRect(ox,ot,MAP_W*ts,fogH);
-  ctx.strokeStyle="rgba(80,80,180,0.4)";ctx.lineWidth=2;ctx.setLineDash([6,4]);
+  ctx.strokeStyle="rgba(80,80,180,0.38)";ctx.lineWidth=2;ctx.setLineDash([6,4]);
   ctx.beginPath();ctx.moveTo(ox,ot+fogH);ctx.lineTo(ox+MAP_W*ts,ot+fogH);ctx.stroke();ctx.setLineDash([]);
-  ctx.fillStyle="rgba(120,130,200,0.5)";ctx.font="11px Arial";ctx.textAlign="center";
+  ctx.fillStyle="rgba(120,130,200,0.45)";ctx.font="10px Arial";ctx.textAlign="center";
   ctx.fillText("☁️  ENEMY TERRITORY — FOG OF WAR  ☁️",ox+MAP_W*ts/2,ot+fogH/2+4);
+}
+// AI strategy HUD (top right corner)
+function drawAIStrategyHint(){
+  let labels={rush:"⚡ Rush",contain:"🛡 Contain",flank:"🏇 Flank",siege:"🔫 Siege"};
+  ctx.fillStyle="rgba(255,82,82,0.55)";ctx.font="9px Arial";ctx.textAlign="right";
+  ctx.fillText("Enemy: "+labels[aiStrategy],W()-6,HEADER_H+14);
 }
 
 function draw(){
   ctx.clearRect(0,0,W(),H());
   ctx.fillStyle="#0c0c14";ctx.fillRect(0,0,W(),H());
-  drawTerrain();drawOutlines();drawBuildings();drawMines();
-
-  // Draw squads (enemy hidden in fog/zone)
+  drawTerrain();drawOutlines();drawBuildings();drawMines();drawRallyPoint();
   for(let sq of squads){
     if(sq.team==="ai"){
       let c=sq.center(),{tx,ty}=worldToTile(c.x,c.y);
@@ -1172,38 +1363,227 @@ function draw(){
     }
     sq.draw();
   }
-
   bullets.forEach(b=>b.draw());
   explosions.forEach(e=>e.draw());
   if(spyPlane)spyPlane.draw();
   drawEnemyFogOverlay();
-
-  // [#1] Selection indicators (behind fog overlay is fine)
   drawSquadIndicators();
-  // [#3] Swirl zone
   drawSwirlZone();
-
   drawDragLine();
   drawPlacingCursor();
+  drawAIStrategyHint();
 }
 
 // ═══════════════════════════════════════════════════
-// FIXED-STEP GAME LOOP
+// ANNOUNCER — queued TTS, never interrupts itself
+// ═══════════════════════════════════════════════════
+const ANN={
+  queue:[],          // pending lines
+  speaking:false,    // currently playing
+  // Cooldown map: key → timestamp of last announce, prevents spam
+  _cd:{},
+  // How long (ms) before the same key can fire again
+  _cdTime:{
+    enemy_spotted:12000, // per unit type
+    under_attack:8000,
+    building_lost:10000,
+    building_captured:8000,
+    squad_eliminated:5000,
+    low_gold:20000,
+    time_warning:0,   // each fires once (tracked separately)
+  },
+};
+
+// Preferred voice — deep authoritative male, Black Ops 2 style
+let _voice=null;
+function _pickVoice(){
+  if(!window.speechSynthesis)return;
+  let voices=speechSynthesis.getVoices();
+  // Priority: deep English male voices
+  let preferred=[
+    "Google UK English Male",
+    "Daniel",               // macOS/iOS deep UK male
+    "Arthur",               // macOS deep UK male
+    "Aaron",                // macOS US male
+    "Fred",                 // macOS robotic/deep
+    "Google US English",
+    "Alex",
+  ];
+  for(let name of preferred){
+    let v=voices.find(v=>v.name===name||v.name.includes(name));
+    if(v){_voice=v;return;}
+  }
+  // Fallback: any English male-sounding voice
+  _voice=voices.find(v=>v.lang.startsWith("en-GB"))||
+         voices.find(v=>v.lang.startsWith("en"))||
+         voices[0]||null;
+}
+if(window.speechSynthesis){
+  speechSynthesis.onvoiceschanged=_pickVoice;
+  _pickVoice();
+}
+
+function _speakNext(){
+  if(!window.speechSynthesis||ANN.speaking||!ANN.queue.length)return;
+  let text=ANN.queue.shift();
+  ANN.speaking=true;
+  let utt=new SpeechSynthesisUtterance(text);
+  utt.rate=0.82;    // deliberate, authoritative — not rushed
+  utt.pitch=0.72;   // low and gravelly
+  utt.volume=1.0;
+  if(_voice)utt.voice=_voice;
+  utt.onend=()=>{ANN.speaking=false;_speakNext();};
+  utt.onerror=()=>{ANN.speaking=false;_speakNext();};
+  speechSynthesis.speak(utt);
+}
+
+// Public: queue a line with optional cooldown key
+function announce(text,cdKey){
+  if(gameOver)return;
+  if(cdKey){
+    let now=Date.now();
+    let wait=ANN._cdTime[cdKey]??5000;
+    if(ANN._cd[cdKey]&&now-ANN._cd[cdKey]<wait)return;
+    ANN._cd[cdKey]=now;
+  }
+  // Cap queue at 5 so old events don't pile up forever
+  if(ANN.queue.length>=5)ANN.queue.splice(2); // keep first 2, drop middle
+  ANN.queue.push(text);
+  _speakNext();
+}
+
+// One-shot time warnings — each fires exactly once
+let _timeWarnsFired={120:false,60:false,30:false,10:false};
+function checkTimeWarnings(){
+  if(timer<=10&&!_timeWarnsFired[10]){_timeWarnsFired[10]=true;announce("Ten seconds.");}
+  else if(timer<=30&&!_timeWarnsFired[30]){_timeWarnsFired[30]=true;announce("Thirty seconds. Push.");}
+  else if(timer<=60&&!_timeWarnsFired[60]){_timeWarnsFired[60]=true;announce("One minute remaining.");}
+  else if(timer<=120&&!_timeWarnsFired[120]){_timeWarnsFired[120]=true;announce("Two minutes on the clock.");}
+}
+
+// Track which enemy unit types we've already spotted this game
+let _spottedTypes=new Set();
+// Track player building ownership to detect captures/losses
+let _prevBuildingTeams=new Map(); // id→team
+// Track which player squads existed to detect eliminations
+let _prevPlayerSquadIds=new Set();
+// Track under-attack state
+let _playerHpMap=new Map(); // soldier id→hp
+let _underAttackCooldown=0;
+
+function resetAnnouncerState(){
+  ANN.queue=[];ANN.speaking=false;ANN._cd={};
+  _timeWarnsFired={120:false,60:false,30:false,10:false};
+  _spottedTypes.clear();
+  _prevBuildingTeams.clear();
+  _prevPlayerSquadIds.clear();
+  _playerHpMap.clear();
+  _underAttackCooldown=0;
+  if(window.speechSynthesis)speechSynthesis.cancel();
+}
+
+// Called every logic frame to detect events
+function updateAnnouncer(dt){
+  _underAttackCooldown=Math.max(0,_underAttackCooldown-dt);
+  checkTimeWarnings();
+
+  // ── ENEMY SPOTTED ─────────────────────────────
+  // Check AI squads that have moved into revealed fog tiles
+  for(let sq of squads){
+    if(sq.team!=="ai"||!sq.members.length)continue;
+    let id=sq.cls.id;
+    if(_spottedTypes.has(id))continue;
+    let c=sq.center();
+    let{tx,ty}=worldToTile(c.x,c.y);
+    // Visible if fog revealed and not in enemy home zone (or spy active)
+    if(inM(tx,ty)&&fog[ty][tx]&&(ty>=FOG_ROWS||spyPlane)){
+      _spottedTypes.add(id);
+      // Flavour lines per unit type
+      const spotLines={
+        soldier: "Enemy soldiers. Advancing.",
+        squad:   "Hostile squad. Contact.",
+        sniper:  "Sniper. Take cover.",
+        tank:    "Armor on the field. All units fall back.",
+        mortar:  "Mortar team. Incoming.",
+        cavalry: "Enemy cavalry. Watch your flanks.",
+        shield:  "Shield wall. Holding position.",
+        berserker:"Berserkers. Close range. Danger.",
+        para:    "Paratroopers. Behind the line.",
+        rocket:  "Rocket team. Armor at risk.",
+        artillery:"Artillery. Seek cover now.",
+        aa:      "Anti-air. Watch the skies.",
+        engineer:"Enemy engineer. Neutralize.",
+        medic:   "Hostile medic. Eliminating support.",
+      };
+      announce(spotLines[id]||`Hostile ${sq.cls.name} spotted.`,"enemy_spotted_"+id);
+    }
+  }
+
+  // ── UNDER ATTACK ──────────────────────────────
+  if(_underAttackCooldown<=0){
+    for(let s of soldiers){
+      if(s.team!=="player"||s.hp<=0)continue;
+      let prev=_playerHpMap.get(s)||s.cls.hp;
+      if(s.hp<prev-2){
+        announce("Commander, we're taking fire!","under_attack");
+        _underAttackCooldown=8;
+        break;
+      }
+    }
+  }
+  // Update hp snapshot
+  _playerHpMap.clear();
+  for(let s of soldiers){if(s.team==="player")_playerHpMap.set(s,s.hp);}
+
+  // ── SQUAD ELIMINATED ─────────────────────────
+  let curIds=new Set(squads.filter(s=>s.team==="player").map(s=>s));
+  for(let sq of _prevPlayerSquadIds){
+    if(!curIds.has(sq)){
+      announce(`${sq.cls.name} down. Squad eliminated.`,"squad_eliminated");
+    }
+  }
+  _prevPlayerSquadIds=new Set(squads.filter(s=>s.team==="player"));
+
+  // ── BUILDING CAPTURED / LOST ──────────────────
+  for(let b of buildings){
+    if(b.destroyed)continue;
+    let prev=_prevBuildingTeams.get(b);
+    if(prev!==undefined&&prev!==b.team){
+      if(b.team===1) announce(`${BTYPES[b.type].name}. Secured.`,"building_captured");
+      else if(b.team===-1&&prev===1) announce(`${BTYPES[b.type].name} lost. Enemy control.`,"building_lost");
+    }
+    _prevBuildingTeams.set(b,b.team);
+  }
+  // First pass: seed the map silently
+  if(_prevBuildingTeams.size===0){
+    for(let b of buildings)_prevBuildingTeams.set(b,b.team);
+  }
+
+  // ── LOW GOLD ──────────────────────────────────
+  if(gold<4&&gold>0){
+    announce("Gold critical. Spend wisely.","low_gold");
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// GAME LOOP
 // ═══════════════════════════════════════════════════
 let lastTime=performance.now(),accum=0;
 const STEP=1/60;
 function logicStep(dt){
   timer-=dt;if(timer<=0)timer=0;
-  goldAccum+=dt;if(goldAccum>=1){goldAccum-=1;gold+=1;}
+  // Player income
+  goldAccum+=dt;if(goldAccum>=1){goldAccum-=1;gold+=0.7;}
   goldMineT+=dt;
   if(goldMineT>=1){
     goldMineT=0;
     for(let b of buildings){
+      if(b.destroyed)continue;
       if(b.type==="goldmine"&&b.team===1){
         let near=soldiers.some(s=>{if(s.team!=="player"||s.hp<=0)return false;let{tx,ty}=s.getTile();return Math.abs(tx-b.x)+Math.abs(ty-b.y)<=2;});
-        if(near)gold+=2;
+        if(near)gold+=3;
       }
-      if(b.type==="barracks"&&b.team===1)gold+=.2;
+      if(b.type==="barracks"&&b.team===1)gold+=.3;
     }
   }
   updateAI(dt);
@@ -1212,6 +1592,7 @@ function logicStep(dt){
   for(let e of explosions)e.update();explosions=explosions.filter(e=>e.life>0);
   if(spyPlane)spyPlane.update();
   soldiers=soldiers.filter(s=>s.hp>0);
+  updateAnnouncer(dt);
   let[tp,ta]=calcTerritory();
   document.getElementById("tDisp").textContent=Math.ceil(timer);
   document.getElementById("gDisp").textContent=Math.floor(gold);
@@ -1228,12 +1609,20 @@ function gameLoop(now){
 function showEnd(){
   let[tp,ta]=calcTerritory();
   let wt=tp>ta?"🏆 YOU WIN!":tp<ta?"💀 AI WINS!":"🤝 DRAW";
+  let kills=squads.reduce((s,sq)=>s+(sq.team==="player"?sq.kills:0),0);
   let el=document.getElementById("endTitle");
   el.textContent=wt;el.style.color=tp>ta?"#4fc3f7":tp<ta?"#ff5252":"#ffd54f";
   document.getElementById("endStats").innerHTML=
     `<div>🏴 You: ${tp}% &nbsp;|&nbsp; ☠️ Enemy: ${ta}%</div>`+
-    `<div style="font-size:14px;color:#666;margin-top:8px">💰 Gold: ${Math.floor(gold)}</div>`;
+    `<div>⚔️ Your kills: ${kills}</div>`+
+    `<div style="font-size:13px;color:#666">💰 Gold remaining: ${Math.floor(gold)}</div>`;
   document.getElementById("end").style.display="flex";
+  // Announce result — clear queue first so it fires immediately
+  ANN.queue=[];ANN.speaking=false;
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(tp>ta)announce("Objective secured. Mission complete.");
+  else if(tp<ta)announce("Lines broken. Mission failed.");
+  else announce("Stalemate. Withdraw.");
 }
 
 // ═══════════════════════════════════════════════════
@@ -1242,11 +1631,17 @@ function showEnd(){
 function init(){
   initTerrain();initBuildings();
   mines=[];squads=[];soldiers=[];bullets=[];explosions=[];spyPlane=null;
-  gold=15;aiGold=18;timer=180;gameOver=false;
-  goldAccum=0;aiGoldAccum=0;goldMineT=0;aiSpawnT=0;aiMoveT=0;accum=0;
+  gold=15;aiGold=15;timer=240;gameOver=false;
+  goldAccum=0;aiGoldAccum=0;goldMineT=0;aiSpawnT=0;aiMoveT=0;aiStratTimer=0;accum=0;
   placing=null;placingIdx=-1;selected=null;dragStart=null;lastPointer=null;
+  rallyPoint=null;rallyMode=false;
   SWIRL.active=false;SWIRL.zoneVisible=false;SWIRL.cancelled=false;
+  document.getElementById("rallyBtn").classList.remove("active-rally");
+  document.getElementById("rallyIndicator").innerHTML="📍<br>No rally";
+  resetAnnouncerState();
   buildDeck();resize();
+  // Short delay so voices are loaded before first line
+  setTimeout(()=>announce("All units. Stand by. Battle commencing."),800);
 }
 init();
 requestAnimationFrame(gameLoop);
